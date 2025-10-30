@@ -9,6 +9,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from typing import List, Tuple, Dict
 import time
+import os
+from datetime import datetime
 
 # ============================================================================
 # 1. DATASET - 50 Makanan Indonesia (10 per kategori)
@@ -447,10 +449,75 @@ def plot_comparison(ga_history, pso_history):
     plt.axhline(y=95, color='r', linestyle='--', label='95% threshold')
     
     plt.tight_layout()
-    plt.savefig('convergence_comparison.png', dpi=300, bbox_inches='tight')
+
+    # Ensure results directory exists (relative to this script)
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    results_dir = os.path.join(script_dir, 'results')
+    os.makedirs(results_dir, exist_ok=True)
+
+    out_path = os.path.join(results_dir, 'convergence_comparison.png')
+    plt.savefig(out_path, dpi=300, bbox_inches='tight')
     plt.show()
-    
-    print("\n✅ Grafik disimpan: convergence_comparison.png")
+
+    print(f"\n✅ Grafik disimpan: {out_path}")
+
+
+def save_solution_report(ga_solution, ga_history, ga_nutrition,
+                         pso_solution, pso_history, pso_nutrition):
+    """Save a human-readable solution report into results/ folder."""
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    results_dir = os.path.join(script_dir, 'results')
+    os.makedirs(results_dir, exist_ok=True)
+
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    report_path = os.path.join(results_dir, 'solution_report.txt')
+    report_path_ts = os.path.join(results_dir, f'solution_report_{timestamp}.txt')
+
+    def format_solution(solution):
+        lines = []
+        for category in FOOD_DATABASE.keys():
+            start_idx = CATEGORY_START[category]
+            items = []
+            for i, food in enumerate(FOOD_DATABASE[category]):
+                portion = float(solution[start_idx + i])
+                if portion > 10:
+                    items.append(f"{food['nama']}: {portion:.1f} g")
+            if items:
+                lines.append(f"{category.upper()}:")
+                for it in items:
+                    lines.append(f"  - {it}")
+        return "\n".join(lines)
+
+    content_lines = []
+    content_lines.append("OPTIMASI MENU MAKANAN - SOLUTION REPORT")
+    content_lines.append(f"Generated: {datetime.now().isoformat()}")
+    content_lines.append("\n-- GENETIC ALGORITHM (GA) --")
+    content_lines.append(f"Final Fitness: {ga_history[-1]:.4f}")
+    content_lines.append(f"Total Cost (Rp): {ga_nutrition['cost']:.2f}")
+    content_lines.append(f"Kalori (kcal): {ga_nutrition['kalori']:.2f}")
+    content_lines.append(f"Protein (g): {ga_nutrition['protein']:.2f}")
+    content_lines.append(f"Karbo (g): {ga_nutrition['karbo']:.2f}")
+    content_lines.append("\nDAFTAR MAKANAN (porsi > 10g):")
+    content_lines.append(format_solution(ga_solution))
+
+    content_lines.append("\n-- PARTICLE SWARM OPTIMIZATION (PSO) --")
+    content_lines.append(f"Final Fitness: {pso_history[-1]:.4f}")
+    content_lines.append(f"Total Cost (Rp): {pso_nutrition['cost']:.2f}")
+    content_lines.append(f"Kalori (kcal): {pso_nutrition['kalori']:.2f}")
+    content_lines.append(f"Protein (g): {pso_nutrition['protein']:.2f}")
+    content_lines.append(f"Karbo (g): {pso_nutrition['karbo']:.2f}")
+    content_lines.append("\nDAFTAR MAKANAN (porsi > 10g):")
+    content_lines.append(format_solution(pso_solution))
+
+    # Write both a latest copy and a timestamped archive
+    full_text = "\n".join(content_lines)
+    with open(report_path, 'w', encoding='utf-8') as f:
+        f.write(full_text)
+    with open(report_path_ts, 'w', encoding='utf-8') as f:
+        f.write(full_text)
+
+    print(f"\n✅ Laporan solusi disimpan: {report_path}")
+    print(f"✅ Arsip laporan: {report_path_ts}")
 
 # Add nutrition guide reference
 NUTRITION_GUIDE = {
@@ -511,6 +578,12 @@ def main():
     
     # Plot
     plot_comparison(ga_history, pso_history)
+    # Save textual solution report into results/
+    try:
+        save_solution_report(ga_solution, ga_history, ga_nutrition,
+                             pso_solution, pso_history, pso_nutrition)
+    except Exception as e:
+        print(f"Gagal menyimpan laporan solusi: {e}")
     
     print("\n✅ Program selesai!")
     print("📊 Hasil tersimpan dalam grafik 'convergence_comparison.png'")

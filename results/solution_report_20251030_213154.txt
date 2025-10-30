@@ -1,0 +1,69 @@
+OPTIMASI MENU MAKANAN - SOLUTION REPORT
+Generated: 2025-10-30T21:31:54.500428
+
+-- GENETIC ALGORITHM (GA) --
+Final Fitness: 0.0340
+Total Cost (Rp): 27957.13
+Kalori (kcal): 1929.08
+Protein (g): 87.68
+Karbo (g): 371.36
+
+DAFTAR MAKANAN (porsi > 10g):
+BUAH:
+  - Jeruk: 241.5 g
+  - Mangga: 16.1 g
+  - Pepaya: 202.8 g
+  - Semangka: 99.8 g
+  - Anggur: 157.9 g
+  - Nanas: 159.0 g
+KARBOHIDRAT:
+  - Roti Tawar: 17.9 g
+  - Jagung: 236.3 g
+  - Ubi: 168.8 g
+  - Pasta: 91.2 g
+PROTEIN:
+  - Tahu: 148.3 g
+  - Ikan Tongkol: 36.9 g
+  - Kacang Merah: 152.7 g
+  - Kacang Hijau: 11.4 g
+SAYUR:
+  - Bayam: 116.4 g
+  - Kangkung: 94.8 g
+  - Wortel: 60.8 g
+  - Kol: 136.9 g
+  - Tomat: 141.8 g
+  - Timun: 190.1 g
+  - Terong: 55.6 g
+  - Buncis: 123.9 g
+  - Labu Siam: 11.4 g
+MINUMAN:
+  - Susu Sapi: 130.0 g
+  - Teh Manis: 38.2 g
+  - Jus Jeruk: 237.3 g
+  - Susu Kedelai: 129.1 g
+  - Kopi Susu: 157.4 g
+  - Air Putih: 151.8 g
+  - Jus Tomat: 80.5 g
+
+-- PARTICLE SWARM OPTIMIZATION (PSO) --
+Final Fitness: 0.0320
+Total Cost (Rp): 30160.00
+Kalori (kcal): 1697.06
+Protein (g): 83.25
+Karbo (g): 312.54
+
+DAFTAR MAKANAN (porsi > 10g):
+BUAH:
+  - Melon: 94.3 g
+  - Nanas: 500.0 g
+KARBOHIDRAT:
+  - Kentang: 500.0 g
+PROTEIN:
+  - Tahu: 500.0 g
+SAYUR:
+  - Wortel: 500.0 g
+  - Brokoli: 500.0 g
+  - Labu Siam: 500.0 g
+MINUMAN:
+  - Air Kelapa: 500.0 g
+  - Jus Tomat: 500.0 g
