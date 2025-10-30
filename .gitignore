@@ -21,6 +21,3 @@ build/
 
 # Jupyter Notebook
 .ipynb_checkpoints
-
-# Generated files
-*.png

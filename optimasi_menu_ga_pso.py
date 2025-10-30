@@ -535,7 +535,7 @@ NUTRITION_GUIDE = {
 def main():
     print("="*60)
     print("OPTIMASI MENU MAKANAN - GA vs PSO")
-    print("By: Mochamad Faisal Akbar (L0122094) - Kecerdasan Komputasional")
+    print("Mochamad Faisal Akbar (L0122094) - Kecerdasan Komputasional")
     print("="*60)
     
     # Run GA
