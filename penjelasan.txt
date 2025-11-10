@@ -1,0 +1,346 @@
+# ============================================================================
+# 12. DOKUMENTASI TAMBAHAN
+# ============================================================================
+
+"""
+DOKUMENTASI LENGKAP PROGRAM
+
+1. STRUKTUR PROGRAM
+   - Section 1: Dataset (50 makanan Indonesia)
+   - Section 2: Nutritional targets
+   - Section 3: Fitness function & constraints
+   - Section 4: Genetic Algorithm implementation
+   - Section 5: PSO implementation
+   - Section 6: Helper functions (reporting & visualization)
+   - Section 7: Weekly menu generation
+   - Section 8: Statistical analysis (30 runs + t-test)
+   - Section 9: Main program (interactive menu)
+   - Section 10: Additional utilities
+   - Section 11: Program entry point
+   - Section 12: Documentation
+
+2. CARA MENJALANKAN
+   a. Interactive Mode:
+      python nutrition_optimization.py
+      
+   b. Jupyter Notebook:
+      - Copy semua code ke satu cell
+      - Run cell
+      - Pilih menu
+   
+   c. Command Line Arguments (Advanced):
+      # Edit di section 11 untuk custom behavior
+
+3. OUTPUT FILES
+   - weekly_menu_GA_TIMESTAMP.csv: Menu 7 hari (GA)
+   - weekly_menu_PSO_TIMESTAMP.csv: Menu 7 hari (PSO)
+   - statistical_analysis_TIMESTAMP.png: Boxplot statistik
+   - statistical_results_TIMESTAMP.json: Raw statistical data
+   - menu.txt: Exported menu (text format)
+
+4. PARAMETER TUNING GUIDELINES
+   
+   GA Parameters:
+   - pop_size: 20-50 (default=30)
+     • Lebih besar = eksplorasi lebih baik, tapi lebih lambat
+   - generations: 30-100 (default=50)
+     • Lebih banyak = solusi lebih optimal
+   - pc (crossover rate): 0.7-0.9 (default=0.8)
+     • Tinggi = lebih banyak eksplorasi
+   - pm (mutation rate): 0.1-0.3 (default=0.2)
+     • Tinggi = lebih diverse, hindari premature convergence
+   
+   PSO Parameters:
+   - n_particles: 20-50 (default=30)
+     • Sama seperti GA pop_size
+   - iterations: 30-100 (default=50)
+     • Sama seperti GA generations
+   - w (inertia): 0.4-0.9 (default=0.7)
+     • Tinggi = eksplorasi, rendah = eksploitasi
+   - c1 (cognitive): 1.0-2.0 (default=1.5)
+     • Pengaruh personal best
+   - c2 (social): 1.0-2.0 (default=1.5)
+     • Pengaruh global best
+
+5. INTERPRETASI HASIL
+   
+   a. Fitness Value:
+      • Higher is better
+      • Typical range: 0.025 - 0.035
+      • Formula: 1000 / (cost + penalty + 1)
+   
+   b. Penalty:
+      • Zero penalty = semua constraints terpenuhi ✅
+      • High penalty = banyak constraint violation ❌
+   
+   c. T-test P-value:
+      • p < 0.05: Perbedaan signifikan secara statistik
+      • p > 0.05: Tidak ada perbedaan signifikan
+   
+   d. Convergence:
+      • Fast convergence: Baik untuk efisiensi
+      • Slow convergence: Mungkin lebih thorough exploration
+
+6. TROUBLESHOOTING
+   
+   Problem: Penalty selalu tinggi
+   Solution: 
+   - Relax constraints di TARGETS
+   - Increase population/particles
+   - Increase generations/iterations
+   
+   Problem: Cost selalu > budget
+   Solution:
+   - Increase MAX_BUDGET
+   - Adjust penalty weights (increase w₄)
+   
+   Problem: Algoritma lambat
+   Solution:
+   - Reduce pop_size/n_particles
+   - Reduce generations/iterations
+   - Run in parallel (advanced)
+
+7. CUSTOMIZATION TIPS
+   
+   a. Menambah makanan baru:
+      • Edit FOOD_DATABASE (section 1)
+      • Update NUM_FOODS otomatis
+   
+   b. Mengubah target nutrisi:
+      • Edit TARGETS (section 2)
+      • Sesuaikan dengan kebutuhan spesifik
+   
+   c. Mengubah penalty weights:
+      • Edit calculate_penalty() (section 3)
+      • Contoh: protein penting → increase weight dari 2.0 ke 5.0
+   
+   d. Menambah constraint baru:
+      • Tambahkan logika di calculate_penalty()
+      • Contoh: constraint untuk vitamin, mineral, dll
+
+8. PERBANDINGAN GA vs PSO (Expected Results)
+   
+   Genetic Algorithm:
+   ✅ Pros:
+      • Robust terhadap local optima
+      • Good for discrete/combinatorial problems
+      • Natural diversity maintenance
+   ❌ Cons:
+      • Potentially slower convergence
+      • More parameters to tune
+   
+   Particle Swarm Optimization:
+   ✅ Pros:
+      • Fast convergence
+      • Fewer parameters
+      • Simple implementation
+   ❌ Cons:
+      • Risk of premature convergence
+      • Less effective for discrete problems
+   
+   Expected Outcomes:
+   • Quality: Similar (PSO mungkin sedikit lebih baik)
+   • Speed: PSO biasanya lebih cepat
+   • Stability: GA biasanya lebih stabil
+
+9. VALIDASI HASIL
+   
+   Checklist sebelum menggunakan menu:
+   ☐ Kalori dalam range 1800-2200 kkal
+   ☐ Protein ≥ 50g
+   ☐ Karbohidrat 250-350g
+   ☐ Budget ≤ Rp 50,000
+   ☐ Setiap kategori memenuhi minimum portion
+   ☐ Tidak ada makanan dengan porsi aneh (>500g)
+
+10. REFERENCES & CITATIONS
+    
+    Algoritma:
+    • Genetic Algorithm: Holland, J.H. (1975)
+    • PSO: Kennedy & Eberhart (1995)
+    
+    Data:
+    • TKPI (Tabel Komposisi Pangan Indonesia) 2017
+    • Permenkes RI No. 28 Tahun 2019
+    
+    Optimization:
+    • Constraint handling: Penalty function method
+    • Multi-objective: Weighted sum approach
+
+11. ADVANCED FEATURES (Future Work)
+    
+    Bisa ditambahkan:
+    • Multi-objective optimization (cost + diversity + taste)
+    • Constraint handling: Feasibility rules
+    • Hybrid GA-PSO
+    • Parallel processing
+    • Deep learning untuk prediksi preferensi
+    • Real-time price update dari API
+    • User preference learning
+    • Allergen constraints
+    • Meal timing optimization
+
+12. CONTACT & SUPPORT
+    
+    Developer: Mochamad Faisal Akbar (L0122094)
+    Course: Kecerdasan Komputasional
+    University: Universitas Sebelas Maret
+    
+    Untuk pertanyaan atau bug report:
+    • Email: [your_email]
+    • GitHub: [your_github]
+
+END OF DOCUMENTATION
+"""
+
+# ============================================================================
+# 13. EXAMPLE USAGE SCENARIOS
+# ============================================================================
+
+"""
+CONTOH PENGGUNAAN PROGRAM
+
+Scenario 1: Mahasiswa Kost (Budget Terbatas)
+──────────────────────────────────────────────
+Target:
+- Budget: Rp 30,000/hari
+- Protein: Minimal (50g)
+- Prioritas: Murah tapi sehat
+
+Modifikasi:
+1. Set MAX_BUDGET = 30000
+2. Increase penalty weight untuk budget (0.01 → 0.05)
+3. Run program
+
+Expected Result:
+- Banyak tempe, tahu, telur (protein murah)
+- Nasi putih, mie (karbohidrat murah)
+- Sayur lokal (bayam, kangkung)
+
+──────────────────────────────────────────────
+
+Scenario 2: Atlet/Bodybuilder (High Protein)
+──────────────────────────────────────────────
+Target:
+- Protein: 100g+ per hari
+- Kalori: 2500-3000 kkal
+- Budget: Lebih fleksibel
+
+Modifikasi:
+1. Set TARGETS['protein']['min'] = 100
+2. Set TARGETS['kalori']['max'] = 3000
+3. Increase protein penalty weight (2.0 → 5.0)
+4. Set MAX_BUDGET = 80000
+
+Expected Result:
+- Banyak ayam, ikan, telur
+- Susu, yogurt
+- Karbohidrat kompleks (oatmeal, roti gandum)
+
+──────────────────────────────────────────────
+
+Scenario 3: Diet (Weight Loss)
+──────────────────────────────────────────────
+Target:
+- Kalori: 1500-1800 kkal
+- Protein: Tinggi (60g+)
+- Karbo: Rendah (150-200g)
+
+Modifikasi:
+1. Set TARGETS['kalori'] = {'min': 1500, 'max': 1800, 'ideal': 1650}
+2. Set TARGETS['karbo']['max'] = 200
+3. Set TARGETS['protein']['min'] = 60
+
+Expected Result:
+- Banyak protein (ayam, ikan, telur)
+- Sayuran (rendah kalori)
+- Buah (portion controlled)
+- Karbohidrat minimal
+
+──────────────────────────────────────────────
+
+Scenario 4: Vegetarian
+──────────────────────────────────────────────
+Target:
+- Tanpa daging & ikan
+- Protein dari nabati
+- Nutrisi seimbang
+
+Modifikasi:
+1. Hapus ayam, ikan, daging dari FOOD_DATABASE
+2. Tambah lebih banyak kacang-kacangan
+3. Increase tempe, tahu portion weights
+
+Expected Result:
+- Tempe, tahu sebagai protein utama
+- Kacang merah, kacang hijau
+- Banyak sayur & buah
+- Susu/susu kedelai
+
+──────────────────────────────────────────────
+"""
+
+# ============================================================================
+# 16. FINAL NOTES & TIPS
+# ============================================================================
+
+"""
+FINAL NOTES FOR IMPLEMENTATION
+
+✅ CHECKLIST SEBELUM DEMO/PRESENTASI:
+   1. [ ] Test semua fungsi dengan test_algorithms()
+   2. [ ] Run statistical analysis minimal 30x
+   3. [ ] Generate menu 7 hari untuk showcase
+   4. [ ] Save semua output (CSV, PNG, JSON)
+   5. [ ] Prepare backup data jika demo gagal
+   6. [ ] Print beberapa menu contoh untuk ditunjukkan
+   7. [ ] Siapkan penjelasan matematika (lihat document 1)
+
+📊 TIPS PRESENTASI:
+   1. Mulai dengan penjelasan problem (4 Sehat 5 Sempurna)
+   2. Jelaskan decision variables & constraints
+   3. Tunjukkan convergence plot (GA vs PSO)
+   4. Highlight hasil statistical test (t-test)
+   5. Showcase menu 7 hari yang realistic
+   6. Diskusikan trade-offs (cost vs nutrition)
+   7. Conclude dengan winner (GA atau PSO)
+
+🎯 EXPECTED QUESTIONS & ANSWERS:
+   Q: Kenapa PSO lebih baik/GA lebih baik?
+   A: [Tergantung hasil] Jelaskan dari segi convergence, stability, time
+   
+   Q: Apakah menu ini realistis?
+   A: Ya, semua makanan ada di pasar Indonesia, harga real
+   
+   Q: Kenapa tidak multi-objective?
+   A: Simplifikasi untuk fokus ke perbandingan algoritma
+   
+   Q: Bagaimana handle infeasible solutions?
+   A: Penalty function method, dijelaskan di calculate_penalty()
+   
+   Q: Apakah bisa ditambah constraint lain?
+   A: Ya, tinggal tambah di calculate_penalty() (contoh: vitamin)
+
+💡 IMPROVEMENT IDEAS (Jika ada waktu):
+   1. Add visualisasi pie chart komposisi nutrisi
+   2. Add meal timing (sarapan, makan siang, makan malam)
+   3. Add variety score (hindari makanan sama setiap hari)
+   4. Add taste preference model
+   5. Add seasonal availability constraint
+   6. Integrate real-time price API
+
+🐛 KNOWN LIMITATIONS:
+   1. Harga statis (tidak real-time)
+   2. Tidak consider cooking time/effort
+   3. Tidak consider food combinations (taste)
+   4. Single objective (bisa diperbaiki dengan NSGA-II)
+   5. Tidak ada constraint untuk variety antar hari
+
+📚 RECOMMENDED READING:
+   1. Genetic Algorithms: David Goldberg
+   2. PSO: Kennedy & Eberhart original paper
+   3. Constraint handling: Deb's feasibility rules
+   4. Multi-objective: NSGA-II paper
+
+GOOD LUCK WITH YOUR PRESENTATION! 🚀
+"""

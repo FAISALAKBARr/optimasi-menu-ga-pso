@@ -83,7 +83,7 @@ FOOD_DATABASE = {
         {'nama': 'Yogurt', 'kalori': 59, 'protein': 3.5, 'karbo': 4.7, 'harga': 12000},
         {'nama': 'Kopi Susu', 'kalori': 38, 'protein': 2, 'karbo': 5, 'harga': 3000},
         {'nama': 'Jus Alpukat', 'kalori': 160, 'protein': 2, 'karbo': 8.5, 'harga': 10000},
-        {'nama': 'Air Putih', 'kalori': 0, 'protein': 0, 'karbo': 0, 'harga': 0},
+        {'nama': 'Air Putih', 'kalori': 0, 'protein': 0, 'karbo': 0, 'harga': 800},
         {'nama': 'Jus Tomat', 'kalori': 17, 'protein': 0.8, 'karbo': 3.9, 'harga': 6000},
     ]
 }
@@ -124,6 +124,18 @@ CATEGORY_MIN_PORTIONS = {
 }
 
 MAX_BUDGET = 50000  # Rp per hari
+MIN_PORTION_PER_FOOD = 50  # gram (kalau pilih, minimal 50g)
+
+MAX_ITEMS_PER_CATEGORY = {
+    'buah': 3,        # Maksimal 3 jenis buah per hari
+    'karbohidrat': 2, # Maksimal 2 jenis karbo per hari
+    'protein': 3,     # Maksimal 3 jenis protein per hari
+    'sayur': 4,       # Maksimal 4 jenis sayur per hari
+    'minuman': 2      # Maksimal 2 jenis minuman per hari
+}
+
+STAPLE_FOOD_INDICES = [10, 11]  # Nasi Putih (10), Roti Tawar (11)
+MIN_STAPLE_PORTION = 200  # gram (minimal karbo pokok per hari)
 
 # ============================================================================
 # 3. FITNESS FUNCTION & CONSTRAINTS
@@ -171,6 +183,9 @@ def calculate_penalty(portions: np.ndarray, nutrition: Dict) -> float:
     C3: 250 ≤ Karbo ≤ 350
     C4: Cost ≤ 50,000
     C5: Setiap kategori ≥ minimum portion
+    C6: Minimum portion per food (eliminasi porsi kecil)
+    C7: Maximum items per category (batasi variasi)
+    C8: Staple food requirement (wajib ada nasi/roti)
     
     Penalty menggunakan quadratic function:
       P = weight × (violation)²
@@ -221,6 +236,34 @@ def calculate_penalty(portions: np.ndarray, nutrition: Dict) -> float:
         if category_total < min_portion:
             violation = min_portion - category_total
             penalty += violation ** 2 * 0.5
+
+    # === C6: MINIMUM PORTION PER FOOD ===
+    # Eliminasi porsi terlalu kecil (awkward portions)
+    for i, portion in enumerate(portions):
+        if 0 < portion < MIN_PORTION_PER_FOOD:
+            violation = MIN_PORTION_PER_FOOD - portion
+            penalty += violation ** 2 * 0.1
+    
+    # === C7: LIMIT ITEMS PER CATEGORY ===
+    # Batasi jumlah item per kategori untuk realism
+    for category, max_items in MAX_ITEMS_PER_CATEGORY.items():
+        start_idx = CATEGORY_START[category]
+        end_idx = start_idx + len(FOOD_DATABASE[category])
+        
+        # Hitung berapa item yang dipilih (portion >= MIN_PORTION_PER_FOOD)
+        items_selected = np.sum(portions[start_idx:end_idx] >= MIN_PORTION_PER_FOOD)
+        
+        if items_selected > max_items:
+            violation = items_selected - max_items
+            penalty += violation ** 2 * 10  # Weight besar (penting!)
+
+    # === C8: STAPLE FOOD REQUIREMENT ===
+    # Pastikan ada makanan pokok (nasi/roti) yang cukup
+    staple_total = sum(portions[idx] for idx in STAPLE_FOOD_INDICES)
+    
+    if staple_total < MIN_STAPLE_PORTION:
+        violation = MIN_STAPLE_PORTION - staple_total
+        penalty += violation ** 2 * 1.0
     
     return penalty
 
@@ -232,18 +275,11 @@ def fitness_function(portions: np.ndarray) -> float:
     Formula:
       Fitness = 1000 / (Cost + Penalty + 1)
     
-    Explanation:
-    - Lower cost → Higher fitness ✅
-    - Higher penalty → Lower fitness ❌
-    - +1 to avoid division by zero
-    - 1000 = scaling factor
-    
     Returns: fitness value (float)
     """
     nutrition = calculate_nutrition(portions)
     penalty = calculate_penalty(portions, nutrition)
     cost = nutrition['cost']
-    
     # Fitness formula
     fitness = 1000 / (cost + penalty + 1)
     
@@ -278,6 +314,19 @@ class GeneticAlgorithm:
         self.best_fitness_history = []
         self.avg_fitness_history = []
     
+    # def initialize_population(self):
+    #     """
+    #     Create initial population randomly
+        
+    #     Returns: List of individuals (each = array 50 elemen)
+    #     """
+    #     population = []
+    #     for _ in range(self.pop_size):
+    #         # Random portions 0-300g per food
+    #         individual = np.random.uniform(0, 300, NUM_FOODS)
+    #         population.append(individual)
+    #     return population
+
     def initialize_population(self):
         """
         Create initial population randomly
@@ -286,8 +335,40 @@ class GeneticAlgorithm:
         """
         population = []
         for _ in range(self.pop_size):
-            # Random portions 0-300g per food
-            individual = np.random.uniform(0, 300, NUM_FOODS)
+            individual = np.zeros(NUM_FOODS)
+            
+            # Strategy: Pilih sedikit makanan per kategori, porsi wajar
+            for category in FOOD_DATABASE.keys():
+                start_idx = CATEGORY_START[category]
+                category_size = len(FOOD_DATABASE[category])
+                
+                # Pilih 1-2 makanan per kategori (hindari terlalu banyak variasi)
+                max_items = MAX_ITEMS_PER_CATEGORY[category]
+                n_items = np.random.randint(1, min(max_items + 1, 3))
+                
+                # Pilih index secara random
+                selected_indices = np.random.choice(category_size, n_items, replace=False)
+                
+                # Distribusi porsi berdasarkan kategori (agar realistic)
+                if category == 'karbohidrat':
+                    total_for_category = np.random.uniform(250, 400)
+                elif category == 'protein':
+                    total_for_category = np.random.uniform(100, 200)
+                elif category == 'sayur':
+                    total_for_category = np.random.uniform(150, 300)
+                elif category == 'buah':
+                    total_for_category = np.random.uniform(150, 250)
+                else:  # minuman
+                    total_for_category = np.random.uniform(200, 400)
+                
+                # Bagi ke selected items
+                portions = np.random.dirichlet(np.ones(n_items)) * total_for_category
+                
+                for idx, portion in zip(selected_indices, portions):
+                    food_idx = start_idx + idx
+                    # Pastikan minimal 50g jika dipilih
+                    individual[food_idx] = max(portion, MIN_PORTION_PER_FOOD)
+            
             population.append(individual)
         return population
     
@@ -355,6 +436,11 @@ class GeneticAlgorithm:
         
         Args:
             individual: Array 50 elemen
+
+        Perbaikan:
+        - σ tidak fixed (30), tapi 15% dari current value
+        - Enforce minimum portion (50g)
+        - Probabilitas add makanan baru lebih kecil
         
         Returns: Mutated individual
         """
@@ -362,13 +448,75 @@ class GeneticAlgorithm:
         
         for i in range(NUM_FOODS):
             if np.random.rand() < self.pm:
-                # Add Gaussian noise
-                noise = np.random.normal(0, 30)  # std=30
-                mutated[i] += noise
-                # Clip to valid range
-                mutated[i] = np.clip(mutated[i], 0, 500)
+                current_value = mutated[i]
+                
+                if current_value >= MIN_PORTION_PER_FOOD:
+                    # === Makanan yang sudah dipilih ===
+                    # Mutation dengan σ = 15% dari current value (adaptif!)
+                    sigma = current_value * 0.15
+                    noise = np.random.normal(0, sigma)
+                    mutated[i] += noise
+                    
+                    # Enforce bounds
+                    if mutated[i] < MIN_PORTION_PER_FOOD:
+                        # Jika hasil mutation < 50g, set ke 0 (hapus)
+                        mutated[i] = 0
+                    else:
+                        # Clip ke range valid
+                        mutated[i] = np.clip(mutated[i], MIN_PORTION_PER_FOOD, 500)
+                
+                elif current_value == 0:
+                    # === Makanan yang belum dipilih ===
+                    # 15% chance untuk add makanan baru (lebih konservatif)
+                    if np.random.rand() < 0.15:
+                        mutated[i] = np.random.uniform(MIN_PORTION_PER_FOOD, 150)
         
         return mutated
+    
+    def repair_solution(self, individual):
+        """
+        Repair solution untuk enforce hard constraints C6, C7, C8
+        
+        Post-processing untuk memastikan feasibility
+        """
+        repaired = individual.copy()
+        
+        # === C6: Enforce minimum portion ===
+        # Eliminasi porsi awkward (0 < portion < 50)
+        for i in range(NUM_FOODS):
+            if 0 < repaired[i] < MIN_PORTION_PER_FOOD:
+                repaired[i] = 0
+        
+        # === C7: Enforce max items per category ===
+        for category, max_items in MAX_ITEMS_PER_CATEGORY.items():
+            start_idx = CATEGORY_START[category]
+            end_idx = start_idx + len(FOOD_DATABASE[category])
+            
+            # Get items yang aktif (portion >= 50)
+            category_items = []
+            for i in range(start_idx, end_idx):
+                if repaired[i] >= MIN_PORTION_PER_FOOD:
+                    category_items.append((i, repaired[i]))
+            
+            # Jika melebihi max, hapus yang porsinya paling kecil
+            if len(category_items) > max_items:
+                # Sort by portion (ascending)
+                category_items.sort(key=lambda x: x[1])
+                
+                # Remove excess items
+                n_remove = len(category_items) - max_items
+                for i in range(n_remove):
+                    idx = category_items[i][0]
+                    repaired[idx] = 0
+        
+        # === C8: Ensure staple food minimum ===
+        staple_total = sum(repaired[idx] for idx in STAPLE_FOOD_INDICES)
+        if staple_total < MIN_STAPLE_PORTION:
+            # Tambahkan kekurangan ke Nasi Putih (index 10)
+            deficit = MIN_STAPLE_PORTION - staple_total
+            repaired[10] += deficit
+        
+        return repaired
     
     def evolve(self, verbose=True):
         """
@@ -444,6 +592,9 @@ class GeneticAlgorithm:
                 # === MUTATION ===
                 child1 = self.mutate(child1)
                 child2 = self.mutate(child2)
+
+                child1 = self.repair_solution(child1)
+                child2 = self.repair_solution(child2)
                 
                 new_population.append(child1)
                 if len(new_population) < self.pop_size:
@@ -456,9 +607,13 @@ class GeneticAlgorithm:
         
         if verbose:
             print(f"\n{'='*60}")
-            print(f"✅ GA Completed in {elapsed_time:.2f} seconds")
+            print(f"GA Completed in {elapsed_time:.2f} seconds")
             print(f"Best Fitness: {best_fitness:.6f}")
             print(f"{'='*60}\n")
+
+        # Final repair untuk best solution
+        best_solution = self.repair_solution(best_solution)
+        best_fitness = fitness_function(best_solution)
         
         return best_solution, best_fitness, {
             'best_history': self.best_fitness_history,
@@ -494,6 +649,52 @@ class ParticleSwarmOptimization:
         self.c2 = c2  # social coefficient
         self.best_fitness_history = []
         self.avg_fitness_history = []
+
+    def repair_solution(self, individual):
+        """
+        Repair solution untuk enforce hard constraints C6, C7, C8
+        
+        Post-processing untuk memastikan feasibility
+        (Sama seperti GA repair)
+        """
+        repaired = individual.copy()
+        
+        # === C6: Enforce minimum portion ===
+        # Eliminasi porsi awkward (0 < portion < 50)
+        for i in range(NUM_FOODS):
+            if 0 < repaired[i] < MIN_PORTION_PER_FOOD:
+                repaired[i] = 0
+        
+        # === C7: Enforce max items per category ===
+        for category, max_items in MAX_ITEMS_PER_CATEGORY.items():
+            start_idx = CATEGORY_START[category]
+            end_idx = start_idx + len(FOOD_DATABASE[category])
+            
+            # Get items yang aktif (portion >= 50)
+            category_items = []
+            for i in range(start_idx, end_idx):
+                if repaired[i] >= MIN_PORTION_PER_FOOD:
+                    category_items.append((i, repaired[i]))
+            
+            # Jika melebihi max, hapus yang porsinya paling kecil
+            if len(category_items) > max_items:
+                # Sort by portion (ascending)
+                category_items.sort(key=lambda x: x[1])
+                
+                # Remove excess items
+                n_remove = len(category_items) - max_items
+                for i in range(n_remove):
+                    idx = category_items[i][0]
+                    repaired[idx] = 0
+        
+        # === C8: Ensure staple food minimum ===
+        staple_total = sum(repaired[idx] for idx in STAPLE_FOOD_INDICES)
+        if staple_total < MIN_STAPLE_PORTION:
+            # Tambahkan kekurangan ke Nasi Putih (index 10)
+            deficit = MIN_STAPLE_PORTION - staple_total
+            repaired[10] += deficit
+        
+        return repaired
     
     def optimize(self, verbose=True):
         """
@@ -566,6 +767,9 @@ class ParticleSwarmOptimization:
                 
                 # Clip to valid range [0, 500]
                 positions[i] = np.clip(positions[i], 0, 500)
+
+                # === REPAIR (TAMBAHKAN INI - BARU!) ===
+                positions[i] = self.repair_solution(positions[i])
             
             # Track history
             self.best_fitness_history.append(gbest_fitness)
@@ -577,10 +781,14 @@ class ParticleSwarmOptimization:
                       f"Avg: {np.mean(pbest_fitness):.6f}")
         
         elapsed_time = time.time() - start_time
+
+        # === Final repair untuk gbest ===
+        gbest_position = self.repair_solution(gbest_position)
+        gbest_fitness = fitness_function(gbest_position)
         
         if verbose:
             print(f"\n{'='*60}")
-            print(f"✅ PSO Completed in {elapsed_time:.2f} seconds")
+            print(f"PSO Completed in {elapsed_time:.2f} seconds")
             print(f"Best Fitness: {gbest_fitness:.6f}")
             print(f"{'='*60}\n")
         
@@ -602,7 +810,7 @@ def print_menu_detail(solution: np.ndarray, day_number: int = None):
         solution: Array 50 elemen (porsi makanan)
         day_number: Nomor hari (opsional)
     """
-    header = f"📋 MENU DETAIL" + (f" - HARI {day_number}" if day_number else "")
+    header = f" MENU DETAIL" + (f" - HARI {day_number}" if day_number else "")
     print(f"\n{'='*70}")
     print(f"{header:^70}")
     print(f"{'='*70}")
@@ -611,7 +819,7 @@ def print_menu_detail(solution: np.ndarray, day_number: int = None):
     
     # Print per kategori
     for category, foods in FOOD_DATABASE.items():
-        print(f"\n🍴 {category.upper()}")
+        print(f"\n{category.upper()}")
         print(f"{'-'*70}")
         
         start_idx = CATEGORY_START[category]
@@ -631,20 +839,62 @@ def print_menu_detail(solution: np.ndarray, day_number: int = None):
     
     # Print summary
     print(f"\n{'='*70}")
-    print(f"📊 RINGKASAN NUTRISI")
+    print(f"RINGKASAN NUTRISI")
     print(f"{'-'*70}")
     print(f"  Kalori      : {nutrition['kalori']:7.1f} kkal "
-          f"({'✅' if TARGETS['kalori']['min'] <= nutrition['kalori'] <= TARGETS['kalori']['max'] else '❌'} "
+          f"({'Memenuhi' if TARGETS['kalori']['min'] <= nutrition['kalori'] <= TARGETS['kalori']['max'] else 'Tidak Memenuhi'} "
           f"Target: {TARGETS['kalori']['min']}-{TARGETS['kalori']['max']})")
     print(f"  Protein     : {nutrition['protein']:7.1f} g    "
-          f"({'✅' if nutrition['protein'] >= TARGETS['protein']['min'] else '❌'} "
+          f"({'Memenuhi' if nutrition['protein'] >= TARGETS['protein']['min'] else 'Tidak Memenuhi'} "
           f"Target: ≥{TARGETS['protein']['min']})")
     print(f"  Karbohidrat : {nutrition['karbo']:7.1f} g    "
-          f"({'✅' if TARGETS['karbo']['min'] <= nutrition['karbo'] <= TARGETS['karbo']['max'] else '❌'} "
+          f"({'Memenuhi' if TARGETS['karbo']['min'] <= nutrition['karbo'] <= TARGETS['karbo']['max'] else 'Tidak Memenuhi'} "
           f"Target: {TARGETS['karbo']['min']}-{TARGETS['karbo']['max']})")
     print(f"  Biaya       : Rp {nutrition['cost']:,.0f}  "
-          f"({'✅' if nutrition['cost'] <= MAX_BUDGET else '❌'} "
+          f"({'Memenuhi' if nutrition['cost'] <= MAX_BUDGET else 'Tidak Memenuhi'} "
           f"Target: ≤Rp {MAX_BUDGET:,})")
+    print(f"{'='*70}")
+
+    # ===== ✨ TAMBAHAN: VALIDASI CONSTRAINTS =====
+    print(f"\n⚠️  VALIDASI CONSTRAINTS")
+    print(f"{'-'*70}")
+    
+    # Check C6: Min Portion
+    violation_c6 = [(i, p) for i, p in enumerate(solution) if 0 < p < MIN_PORTION_PER_FOOD]
+    if violation_c6:
+        print(f"❌ C6 VIOLATION: {len(violation_c6)} makanan porsi < 50g")
+    else:
+        print(f"✅ C6: Semua porsi ≥ 50g")
+    
+    # Check C7: Max Items
+    for category, max_items in MAX_ITEMS_PER_CATEGORY.items():
+        start_idx = CATEGORY_START[category]
+        end_idx = start_idx + len(FOOD_DATABASE[category])
+        
+        # Hanya hitung yang ≥ MIN_PORTION_PER_FOOD
+        items = np.sum(solution[start_idx:end_idx] >= MIN_PORTION_PER_FOOD)
+        
+        if items > max_items:
+            print(f"❌ C7 VIOLATION: {category} = {items} jenis (max = {max_items})")
+        else:
+            print(f"✅ C7: {category} = {items} jenis (max = {max_items})")
+    
+    # Check C8: Staple Food
+    staple_total = sum(solution[idx] for idx in STAPLE_FOOD_INDICES)
+    if staple_total < MIN_STAPLE_PORTION:
+        print(f"❌ C8 VIOLATION: Staple food = {staple_total:.1f}g (min = 200g)")
+    else:
+        print(f"✅ C8: Staple food = {staple_total:.1f}g (min = 200g)")
+    
+    print(f"{'='*70}\n")
+
+    print(f"\nCATATAN PENGGUNAAN")
+    print(f"{'-'*70}")
+    print(f"Menu di atas adalah total untuk 1 HARI (3x makan).")
+    print(f"Suggested distribution:")
+    print(f"  • Sarapan (30%): Karbo + Protein + Buah + Minuman")
+    print(f"  • Makan Siang (40%): Porsi terbesar, semua kategori")
+    print(f"  • Makan Malam (30%): Lebih ringan, Protein + Sayur")
     print(f"{'='*70}\n")
 
 def plot_convergence_comparison(ga_history: Dict, pso_history: Dict, 
@@ -685,7 +935,7 @@ def plot_convergence_comparison(ga_history: Dict, pso_history: Dict,
     
     if save_path:
         plt.savefig(save_path, dpi=300, bbox_inches='tight')
-        print(f"✅ Plot saved to: {save_path}")
+        print(f"Plot saved to: {save_path}")
     
     plt.show()
 
@@ -698,7 +948,7 @@ def print_comparison_summary(ga_result: Dict, pso_result: Dict):
         pso_result: Dictionary hasil PSO
     """
     print(f"\n{'='*70}")
-    print(f"{'📊 PERBANDINGAN GA vs PSO':^70}")
+    print(f"{'PERBANDINGAN GA vs PSO':^70}")
     print(f"{'='*70}")
     
     print(f"\n{'Metric':<30} {'GA':>15} {'PSO':>15} {'Winner':>10}")
@@ -766,7 +1016,7 @@ def generate_weekly_menu(algorithm='both', verbose=True):
     days = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu']
     
     print(f"\n{'='*70}")
-    print(f"{'🗓️  GENERATE MENU 7 HARI':^70}")
+    print(f"{'GENERATE MENU 7 HARI':^70}")
     print(f"{'='*70}\n")
     
     for day_num, day_name in enumerate(days, 1):
@@ -816,7 +1066,7 @@ def generate_weekly_menu(algorithm='both', verbose=True):
     
     # === SUMMARY 7 HARI ===
     print(f"\n{'='*70}")
-    print(f"{'📊 SUMMARY 7 HARI':^70}")
+    print(f"{'SUMMARY 7 HARI':^70}")
     print(f"{'='*70}\n")
     
     if 'GA' in results and len(results['GA']) > 0:
@@ -853,7 +1103,7 @@ def run_statistical_test(n_runs=30):
     Returns: Dictionary hasil statistik
     """
     print(f"\n{'='*70}")
-    print(f"{'📈 STATISTICAL ANALYSIS - ' + str(n_runs) + ' RUNS':^70}")
+    print(f"{'STATISTICAL ANALYSIS - ' + str(n_runs) + ' RUNS':^70}")
     print(f"{'='*70}\n")
     
     ga_fitnesses = []
@@ -890,11 +1140,11 @@ def run_statistical_test(n_runs=30):
         pso_costs.append(pso_nutr['cost'])
         pso_times.append(pso_hist['time'])
     
-    print(f"\n✅ Completed {n_runs} runs!\n")
+    print(f"\nCompleted {n_runs} runs!\n")
     
     # === DESCRIPTIVE STATISTICS ===
     print(f"{'='*70}")
-    print(f"{'📊 DESCRIPTIVE STATISTICS':^70}")
+    print(f"{'DESCRIPTIVE STATISTICS':^70}")
     print(f"{'='*70}\n")
     
     # Convert to numpy arrays
@@ -930,7 +1180,7 @@ def run_statistical_test(n_runs=30):
     
     # === PAIRED T-TEST ===
     print(f"\n{'='*70}")
-    print(f"{'📊 PAIRED T-TEST RESULTS':^70}")
+    print(f"{'PAIRED T-TEST RESULTS':^70}")
     print(f"{'='*70}\n")
     
     # H0: μ_GA = μ_PSO (tidak ada perbedaan signifikan)
@@ -939,34 +1189,34 @@ def run_statistical_test(n_runs=30):
     
     # Test 1: Fitness
     t_stat_fit, p_value_fit = stats.ttest_rel(ga_fitnesses, pso_fitnesses)
-    print(f"1️⃣  FITNESS COMPARISON")
+    print(f"1️  FITNESS COMPARISON")
     print(f"   T-statistic: {t_stat_fit:.4f}")
     print(f"   P-value: {p_value_fit:.6f}")
-    print(f"   Result: {'❌ TIDAK signifikan (p > 0.05)' if p_value_fit > 0.05 else '✅ SIGNIFIKAN (p < 0.05)'}")
+    print(f"   Result: {'TIDAK signifikan (p > 0.05)' if p_value_fit > 0.05 else 'SIGNIFIKAN (p < 0.05)'}")
     print(f"   Winner: {'PSO' if np.mean(pso_fitnesses) > np.mean(ga_fitnesses) else 'GA'} "
           f"(Mean: {'PSO=' + f'{np.mean(pso_fitnesses):.6f}' if np.mean(pso_fitnesses) > np.mean(ga_fitnesses) else 'GA=' + f'{np.mean(ga_fitnesses):.6f}'})")
     
     # Test 2: Cost
     t_stat_cost, p_value_cost = stats.ttest_rel(ga_costs, pso_costs)
-    print(f"\n2️⃣  COST COMPARISON")
+    print(f"\n2️  COST COMPARISON")
     print(f"   T-statistic: {t_stat_cost:.4f}")
     print(f"   P-value: {p_value_cost:.6f}")
-    print(f"   Result: {'❌ TIDAK signifikan (p > 0.05)' if p_value_cost > 0.05 else '✅ SIGNIFIKAN (p < 0.05)'}")
+    print(f"   Result: {'TIDAK signifikan (p > 0.05)' if p_value_cost > 0.05 else 'SIGNIFIKAN (p < 0.05)'}")
     print(f"   Winner: {'PSO' if np.mean(pso_costs) < np.mean(ga_costs) else 'GA'} "
           f"(Mean: {'PSO=Rp' + f'{np.mean(pso_costs):,.0f}' if np.mean(pso_costs) < np.mean(ga_costs) else 'GA=Rp' + f'{np.mean(ga_costs):,.0f}'})")
     
     # Test 3: Time
     t_stat_time, p_value_time = stats.ttest_rel(ga_times, pso_times)
-    print(f"\n3️⃣  COMPUTATIONAL TIME COMPARISON")
+    print(f"\n3️  COMPUTATIONAL TIME COMPARISON")
     print(f"   T-statistic: {t_stat_time:.4f}")
     print(f"   P-value: {p_value_time:.6f}")
-    print(f"   Result: {'❌ TIDAK signifikan (p > 0.05)' if p_value_time > 0.05 else '✅ SIGNIFIKAN (p < 0.05)'}")
+    print(f"   Result: {'TIDAK signifikan (p > 0.05)' if p_value_time > 0.05 else 'SIGNIFIKAN (p < 0.05)'}")
     print(f"   Winner: {'PSO' if np.mean(pso_times) < np.mean(ga_times) else 'GA'} "
           f"(Mean: {'PSO=' + f'{np.mean(pso_times):.2f}s' if np.mean(pso_times) < np.mean(ga_times) else 'GA=' + f'{np.mean(ga_times):.2f}s'})")
     
     # === CONFIDENCE INTERVALS (95%) ===
     print(f"\n{'='*70}")
-    print(f"{'📊 95% CONFIDENCE INTERVALS':^70}")
+    print(f"{'95% CONFIDENCE INTERVALS':^70}")
     print(f"{'='*70}\n")
     
     # CI formula: mean ± t_critical * (std / sqrt(n))
@@ -1036,7 +1286,7 @@ def run_statistical_test(n_runs=30):
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     plot_path = f"statistical_analysis_{timestamp}.png"
     plt.savefig(plot_path, dpi=300, bbox_inches='tight')
-    print(f"\n✅ Statistical plots saved to: {plot_path}")
+    print(f"\nStatistical plots saved to: {plot_path}")
     
     plt.show()
     
@@ -1085,7 +1335,7 @@ def main():
     Main program dengan menu interaktif
     """
     print(f"\n{'='*70}")
-    print(f"{'🍽️  NUTRITION OPTIMIZATION SYSTEM':^70}")
+    print(f"{'NUTRITION OPTIMIZATION SYSTEM':^70}")
     print(f"{'GA vs PSO Comparison':^70}")
     print(f"{'='*70}\n")
     
@@ -1105,7 +1355,7 @@ def main():
         if choice == '1':
             # === SINGLE DAY COMPARISON ===
             print(f"\n{'='*70}")
-            print(f"{'🔥 SINGLE DAY OPTIMIZATION':^70}")
+            print(f"{'SINGLE DAY OPTIMIZATION':^70}")
             print(f"{'='*70}")
             
             # Run GA
@@ -1148,7 +1398,7 @@ def main():
         
         elif choice == '2':
             # === WEEKLY MENU GENERATION ===
-            print("\n📅 Generate menu untuk 7 hari")
+            print("\nGenerate menu untuk 7 hari")
             print("Pilih algoritma:")
             print("1. Genetic Algorithm (GA)")
             print("2. Particle Swarm Optimization (PSO)")
@@ -1183,7 +1433,7 @@ def main():
                     ])
                     ga_file = f"weekly_menu_GA_{timestamp}.csv"
                     df_ga.to_csv(ga_file, index=False)
-                    print(f"✅ GA results saved to: {ga_file}")
+                    print(f"GA results saved to: {ga_file}")
                 
                 if algorithm in ['pso', 'both'] and len(weekly_results['PSO']) > 0:
                     df_pso = pd.DataFrame([
@@ -1199,11 +1449,11 @@ def main():
                     ])
                     pso_file = f"weekly_menu_PSO_{timestamp}.csv"
                     df_pso.to_csv(pso_file, index=False)
-                    print(f"✅ PSO results saved to: {pso_file}")
+                    print(f"PSO results saved to: {pso_file}")
         
         elif choice == '3':
             # === STATISTICAL ANALYSIS ===
-            print("\n📊 Statistical Analysis")
+            print("\nStatistical Analysis")
             n_runs_input = input("Jumlah runs (default=30): ").strip()
             n_runs = int(n_runs_input) if n_runs_input.isdigit() else 30
             
@@ -1239,12 +1489,12 @@ def main():
                 
                 with open(json_file, 'w') as f:
                     json.dump(save_data, f, indent=4)
-                print(f"✅ Statistical results saved to: {json_file}")
+                print(f"Statistical results saved to: {json_file}")
         
         elif choice == '4':
             # === QUICK DEMO ===
             print(f"\n{'='*70}")
-            print(f"{'⚡ QUICK DEMO - BEST SOLUTION':^70}")
+            print(f"{'QUICK DEMO - BEST SOLUTION':^70}")
             print(f"{'='*70}\n")
             
             print("Running optimizations... (this may take a moment)")
@@ -1271,7 +1521,7 @@ def main():
                 winner_fitness = pso_fitness
                 winner_nutrition = pso_nutrition
             
-            print(f"\n🏆 WINNER: {winner}")
+            print(f"\n||WINNER||: {winner}")
             print(f"Fitness: {winner_fitness:.6f}")
             print(f"Total Cost: Rp {winner_nutrition['cost']:,.0f}")
             
@@ -1290,12 +1540,12 @@ def main():
         elif choice == '5':
             # === EXIT ===
             print(f"\n{'='*70}")
-            print(f"{'👋 Terima kasih telah menggunakan program ini!':^70}")
+            print(f"{'Terima kasih telah menggunakan program ini!':^70}")
             print(f"{'='*70}\n")
             break
         
         else:
-            print("\n❌ Pilihan tidak valid! Silakan pilih 1-5.")
+            print("\nPilihan tidak valid! Silakan pilih 1-5.")
 
 # ============================================================================
 # 10. ADDITIONAL UTILITY FUNCTIONS
@@ -1341,7 +1591,7 @@ def export_menu_to_pdf(solution: np.ndarray, filename: str = "menu.txt"):
         f.write(f"Biaya       : Rp {nutrition['cost']:,.0f}\n")
         f.write(f"{'='*70}\n")
     
-    print(f"✅ Menu exported to: {filename}")
+    print(f"Menu exported to: {filename}")
 
 def compare_multiple_runs(n_runs: int = 10, algorithm: str = 'both'):
     """
@@ -1374,7 +1624,7 @@ def compare_multiple_runs(n_runs: int = 10, algorithm: str = 'both'):
             _, pso_fitness, _ = pso.optimize(verbose=False)
             results['PSO'].append(pso_fitness)
     
-    print(f"\n✅ Completed {n_runs} runs!\n")
+    print(f"\nCompleted {n_runs} runs!\n")
     
     # Calculate coefficient of variation (CV) = std/mean
     if algorithm in ['ga', 'both']:
@@ -1427,289 +1677,7 @@ if __name__ == "__main__":
     # plot_convergence_comparison(ga_history, pso_history)
 
 # ============================================================================
-# 12. DOKUMENTASI TAMBAHAN
-# ============================================================================
-
-"""
-DOKUMENTASI LENGKAP PROGRAM
-
-1. STRUKTUR PROGRAM
-   - Section 1: Dataset (50 makanan Indonesia)
-   - Section 2: Nutritional targets
-   - Section 3: Fitness function & constraints
-   - Section 4: Genetic Algorithm implementation
-   - Section 5: PSO implementation
-   - Section 6: Helper functions (reporting & visualization)
-   - Section 7: Weekly menu generation
-   - Section 8: Statistical analysis (30 runs + t-test)
-   - Section 9: Main program (interactive menu)
-   - Section 10: Additional utilities
-   - Section 11: Program entry point
-   - Section 12: Documentation
-
-2. CARA MENJALANKAN
-   a. Interactive Mode:
-      python nutrition_optimization.py
-      
-   b. Jupyter Notebook:
-      - Copy semua code ke satu cell
-      - Run cell
-      - Pilih menu
-   
-   c. Command Line Arguments (Advanced):
-      # Edit di section 11 untuk custom behavior
-
-3. OUTPUT FILES
-   - weekly_menu_GA_TIMESTAMP.csv: Menu 7 hari (GA)
-   - weekly_menu_PSO_TIMESTAMP.csv: Menu 7 hari (PSO)
-   - statistical_analysis_TIMESTAMP.png: Boxplot statistik
-   - statistical_results_TIMESTAMP.json: Raw statistical data
-   - menu.txt: Exported menu (text format)
-
-4. PARAMETER TUNING GUIDELINES
-   
-   GA Parameters:
-   - pop_size: 20-50 (default=30)
-     • Lebih besar = eksplorasi lebih baik, tapi lebih lambat
-   - generations: 30-100 (default=50)
-     • Lebih banyak = solusi lebih optimal
-   - pc (crossover rate): 0.7-0.9 (default=0.8)
-     • Tinggi = lebih banyak eksplorasi
-   - pm (mutation rate): 0.1-0.3 (default=0.2)
-     • Tinggi = lebih diverse, hindari premature convergence
-   
-   PSO Parameters:
-   - n_particles: 20-50 (default=30)
-     • Sama seperti GA pop_size
-   - iterations: 30-100 (default=50)
-     • Sama seperti GA generations
-   - w (inertia): 0.4-0.9 (default=0.7)
-     • Tinggi = eksplorasi, rendah = eksploitasi
-   - c1 (cognitive): 1.0-2.0 (default=1.5)
-     • Pengaruh personal best
-   - c2 (social): 1.0-2.0 (default=1.5)
-     • Pengaruh global best
-
-5. INTERPRETASI HASIL
-   
-   a. Fitness Value:
-      • Higher is better
-      • Typical range: 0.025 - 0.035
-      • Formula: 1000 / (cost + penalty + 1)
-   
-   b. Penalty:
-      • Zero penalty = semua constraints terpenuhi ✅
-      • High penalty = banyak constraint violation ❌
-   
-   c. T-test P-value:
-      • p < 0.05: Perbedaan signifikan secara statistik
-      • p > 0.05: Tidak ada perbedaan signifikan
-   
-   d. Convergence:
-      • Fast convergence: Baik untuk efisiensi
-      • Slow convergence: Mungkin lebih thorough exploration
-
-6. TROUBLESHOOTING
-   
-   Problem: Penalty selalu tinggi
-   Solution: 
-   - Relax constraints di TARGETS
-   - Increase population/particles
-   - Increase generations/iterations
-   
-   Problem: Cost selalu > budget
-   Solution:
-   - Increase MAX_BUDGET
-   - Adjust penalty weights (increase w₄)
-   
-   Problem: Algoritma lambat
-   Solution:
-   - Reduce pop_size/n_particles
-   - Reduce generations/iterations
-   - Run in parallel (advanced)
-
-7. CUSTOMIZATION TIPS
-   
-   a. Menambah makanan baru:
-      • Edit FOOD_DATABASE (section 1)
-      • Update NUM_FOODS otomatis
-   
-   b. Mengubah target nutrisi:
-      • Edit TARGETS (section 2)
-      • Sesuaikan dengan kebutuhan spesifik
-   
-   c. Mengubah penalty weights:
-      • Edit calculate_penalty() (section 3)
-      • Contoh: protein penting → increase weight dari 2.0 ke 5.0
-   
-   d. Menambah constraint baru:
-      • Tambahkan logika di calculate_penalty()
-      • Contoh: constraint untuk vitamin, mineral, dll
-
-8. PERBANDINGAN GA vs PSO (Expected Results)
-   
-   Genetic Algorithm:
-   ✅ Pros:
-      • Robust terhadap local optima
-      • Good for discrete/combinatorial problems
-      • Natural diversity maintenance
-   ❌ Cons:
-      • Potentially slower convergence
-      • More parameters to tune
-   
-   Particle Swarm Optimization:
-   ✅ Pros:
-      • Fast convergence
-      • Fewer parameters
-      • Simple implementation
-   ❌ Cons:
-      • Risk of premature convergence
-      • Less effective for discrete problems
-   
-   Expected Outcomes:
-   • Quality: Similar (PSO mungkin sedikit lebih baik)
-   • Speed: PSO biasanya lebih cepat
-   • Stability: GA biasanya lebih stabil
-
-9. VALIDASI HASIL
-   
-   Checklist sebelum menggunakan menu:
-   ☐ Kalori dalam range 1800-2200 kkal
-   ☐ Protein ≥ 50g
-   ☐ Karbohidrat 250-350g
-   ☐ Budget ≤ Rp 50,000
-   ☐ Setiap kategori memenuhi minimum portion
-   ☐ Tidak ada makanan dengan porsi aneh (>500g)
-
-10. REFERENCES & CITATIONS
-    
-    Algoritma:
-    • Genetic Algorithm: Holland, J.H. (1975)
-    • PSO: Kennedy & Eberhart (1995)
-    
-    Data:
-    • TKPI (Tabel Komposisi Pangan Indonesia) 2017
-    • Permenkes RI No. 28 Tahun 2019
-    
-    Optimization:
-    • Constraint handling: Penalty function method
-    • Multi-objective: Weighted sum approach
-
-11. ADVANCED FEATURES (Future Work)
-    
-    Bisa ditambahkan:
-    • Multi-objective optimization (cost + diversity + taste)
-    • Constraint handling: Feasibility rules
-    • Hybrid GA-PSO
-    • Parallel processing
-    • Deep learning untuk prediksi preferensi
-    • Real-time price update dari API
-    • User preference learning
-    • Allergen constraints
-    • Meal timing optimization
-
-12. CONTACT & SUPPORT
-    
-    Developer: Mochamad Faisal Akbar (L0122094)
-    Course: Kecerdasan Komputasional
-    University: Universitas Sebelas Maret
-    
-    Untuk pertanyaan atau bug report:
-    • Email: [your_email]
-    • GitHub: [your_github]
-
-END OF DOCUMENTATION
-"""
-
-# ============================================================================
-# 13. EXAMPLE USAGE SCENARIOS
-# ============================================================================
-
-"""
-CONTOH PENGGUNAAN PROGRAM
-
-Scenario 1: Mahasiswa Kost (Budget Terbatas)
-──────────────────────────────────────────────
-Target:
-- Budget: Rp 30,000/hari
-- Protein: Minimal (50g)
-- Prioritas: Murah tapi sehat
-
-Modifikasi:
-1. Set MAX_BUDGET = 30000
-2. Increase penalty weight untuk budget (0.01 → 0.05)
-3. Run program
-
-Expected Result:
-- Banyak tempe, tahu, telur (protein murah)
-- Nasi putih, mie (karbohidrat murah)
-- Sayur lokal (bayam, kangkung)
-
-──────────────────────────────────────────────
-
-Scenario 2: Atlet/Bodybuilder (High Protein)
-──────────────────────────────────────────────
-Target:
-- Protein: 100g+ per hari
-- Kalori: 2500-3000 kkal
-- Budget: Lebih fleksibel
-
-Modifikasi:
-1. Set TARGETS['protein']['min'] = 100
-2. Set TARGETS['kalori']['max'] = 3000
-3. Increase protein penalty weight (2.0 → 5.0)
-4. Set MAX_BUDGET = 80000
-
-Expected Result:
-- Banyak ayam, ikan, telur
-- Susu, yogurt
-- Karbohidrat kompleks (oatmeal, roti gandum)
-
-──────────────────────────────────────────────
-
-Scenario 3: Diet (Weight Loss)
-──────────────────────────────────────────────
-Target:
-- Kalori: 1500-1800 kkal
-- Protein: Tinggi (60g+)
-- Karbo: Rendah (150-200g)
-
-Modifikasi:
-1. Set TARGETS['kalori'] = {'min': 1500, 'max': 1800, 'ideal': 1650}
-2. Set TARGETS['karbo']['max'] = 200
-3. Set TARGETS['protein']['min'] = 60
-
-Expected Result:
-- Banyak protein (ayam, ikan, telur)
-- Sayuran (rendah kalori)
-- Buah (portion controlled)
-- Karbohidrat minimal
-
-──────────────────────────────────────────────
-
-Scenario 4: Vegetarian
-──────────────────────────────────────────────
-Target:
-- Tanpa daging & ikan
-- Protein dari nabati
-- Nutrisi seimbang
-
-Modifikasi:
-1. Hapus ayam, ikan, daging dari FOOD_DATABASE
-2. Tambah lebih banyak kacang-kacangan
-3. Increase tempe, tahu portion weights
-
-Expected Result:
-- Tempe, tahu sebagai protein utama
-- Kacang merah, kacang hijau
-- Banyak sayur & buah
-- Susu/susu kedelai
-
-──────────────────────────────────────────────
-"""
-
-# ============================================================================
-# 14. TESTING & VALIDATION FUNCTIONS
+# 12. TESTING & VALIDATION FUNCTIONS
 # ============================================================================
 
 def validate_solution(solution: np.ndarray) -> Dict:
@@ -1785,7 +1753,7 @@ def test_algorithms():
     Memastikan algoritma berjalan dengan benar
     """
     print(f"\n{'='*70}")
-    print(f"{'🧪 TESTING ALGORITHMS':^70}")
+    print(f"{'TESTING ALGORITHMS':^70}")
     print(f"{'='*70}\n")
     
     tests_passed = 0
@@ -1798,10 +1766,10 @@ def test_algorithms():
         pop = ga.initialize_population()
         assert len(pop) == 10
         assert all(len(ind) == NUM_FOODS for ind in pop)
-        print("✅ PASSED")
+        print("PASSED")
         tests_passed += 1
     except Exception as e:
-        print(f"❌ FAILED: {e}")
+        print(f"FAILED: {e}")
         tests_failed += 1
     
     # Test 2: GA evolution
@@ -1812,10 +1780,10 @@ def test_algorithms():
         assert len(solution) == NUM_FOODS
         assert fitness > 0
         assert len(history['best_history']) == 5
-        print("✅ PASSED")
+        print("PASSED")
         tests_passed += 1
     except Exception as e:
-        print(f"❌ FAILED: {e}")
+        print(f"FAILED: {e}")
         tests_failed += 1
     
     # Test 3: PSO initialization
@@ -1824,10 +1792,10 @@ def test_algorithms():
         pso = ParticleSwarmOptimization(n_particles=10, iterations=5)
         positions = np.random.uniform(0, 300, (10, NUM_FOODS))
         assert positions.shape == (10, NUM_FOODS)
-        print("✅ PASSED")
+        print("PASSED")
         tests_passed += 1
     except Exception as e:
-        print(f"❌ FAILED: {e}")
+        print(f"FAILED: {e}")
         tests_failed += 1
     
     # Test 4: PSO optimization
@@ -1838,10 +1806,10 @@ def test_algorithms():
         assert len(solution) == NUM_FOODS
         assert fitness > 0
         assert len(history['best_history']) == 5
-        print("✅ PASSED")
+        print("PASSED")
         tests_passed += 1
     except Exception as e:
-        print(f"❌ FAILED: {e}")
+        print(f"FAILED: {e}")
         tests_failed += 1
     
     # Test 5: Fitness function
@@ -1851,10 +1819,10 @@ def test_algorithms():
         fitness = fitness_function(test_solution)
         assert fitness > 0
         assert np.isfinite(fitness)
-        print("✅ PASSED")
+        print("PASSED")
         tests_passed += 1
     except Exception as e:
-        print(f"❌ FAILED: {e}")
+        print(f"FAILED: {e}")
         tests_failed += 1
     
     # Test 6: Constraint validation
@@ -1865,10 +1833,10 @@ def test_algorithms():
         assert 'valid' in validation
         assert 'penalty' in validation
         assert 'constraints' in validation
-        print("✅ PASSED")
+        print("PASSED")
         tests_passed += 1
     except Exception as e:
-        print(f"❌ FAILED: {e}")
+        print(f"FAILED: {e}")
         tests_failed += 1
     
     # Summary
@@ -1879,7 +1847,7 @@ def test_algorithms():
     return tests_passed, tests_failed
 
 # ============================================================================
-# 15. PERFORMANCE PROFILING
+# 13. PERFORMANCE PROFILING
 # ============================================================================
 
 def profile_performance():
@@ -1889,7 +1857,7 @@ def profile_performance():
     import time
     
     print(f"\n{'='*70}")
-    print(f"{'⏱️  PERFORMANCE PROFILING':^70}")
+    print(f"{'  PERFORMANCE PROFILING':^70}")
     print(f"{'='*70}\n")
     
     results = {}
@@ -1944,83 +1912,18 @@ def profile_performance():
     
     speedup = results['GA']['mean'] / results['PSO']['mean']
     if speedup > 1:
-        print(f"⚡ PSO is {speedup:.2f}x faster than GA")
+        print(f" PSO is {speedup:.2f}x faster than GA")
     else:
-        print(f"⚡ GA is {1/speedup:.2f}x faster than PSO")
+        print(f" GA is {1/speedup:.2f}x faster than PSO")
     
     return results
-
-# ============================================================================
-# 16. FINAL NOTES & TIPS
-# ============================================================================
-
-"""
-FINAL NOTES FOR IMPLEMENTATION
-
-✅ CHECKLIST SEBELUM DEMO/PRESENTASI:
-   1. [ ] Test semua fungsi dengan test_algorithms()
-   2. [ ] Run statistical analysis minimal 30x
-   3. [ ] Generate menu 7 hari untuk showcase
-   4. [ ] Save semua output (CSV, PNG, JSON)
-   5. [ ] Prepare backup data jika demo gagal
-   6. [ ] Print beberapa menu contoh untuk ditunjukkan
-   7. [ ] Siapkan penjelasan matematika (lihat document 1)
-
-📊 TIPS PRESENTASI:
-   1. Mulai dengan penjelasan problem (4 Sehat 5 Sempurna)
-   2. Jelaskan decision variables & constraints
-   3. Tunjukkan convergence plot (GA vs PSO)
-   4. Highlight hasil statistical test (t-test)
-   5. Showcase menu 7 hari yang realistic
-   6. Diskusikan trade-offs (cost vs nutrition)
-   7. Conclude dengan winner (GA atau PSO)
-
-🎯 EXPECTED QUESTIONS & ANSWERS:
-   Q: Kenapa PSO lebih baik/GA lebih baik?
-   A: [Tergantung hasil] Jelaskan dari segi convergence, stability, time
-   
-   Q: Apakah menu ini realistis?
-   A: Ya, semua makanan ada di pasar Indonesia, harga real
-   
-   Q: Kenapa tidak multi-objective?
-   A: Simplifikasi untuk fokus ke perbandingan algoritma
-   
-   Q: Bagaimana handle infeasible solutions?
-   A: Penalty function method, dijelaskan di calculate_penalty()
-   
-   Q: Apakah bisa ditambah constraint lain?
-   A: Ya, tinggal tambah di calculate_penalty() (contoh: vitamin)
-
-💡 IMPROVEMENT IDEAS (Jika ada waktu):
-   1. Add visualisasi pie chart komposisi nutrisi
-   2. Add meal timing (sarapan, makan siang, makan malam)
-   3. Add variety score (hindari makanan sama setiap hari)
-   4. Add taste preference model
-   5. Add seasonal availability constraint
-   6. Integrate real-time price API
-
-🐛 KNOWN LIMITATIONS:
-   1. Harga statis (tidak real-time)
-   2. Tidak consider cooking time/effort
-   3. Tidak consider food combinations (taste)
-   4. Single objective (bisa diperbaiki dengan NSGA-II)
-   5. Tidak ada constraint untuk variety antar hari
-
-📚 RECOMMENDED READING:
-   1. Genetic Algorithms: David Goldberg
-   2. PSO: Kennedy & Eberhart original paper
-   3. Constraint handling: Deb's feasibility rules
-   4. Multi-objective: NSGA-II paper
-
-GOOD LUCK WITH YOUR PRESENTATION! 🚀
-"""
 
 # ============================================================================
 # END OF PROGRAM
 # ============================================================================
 
 print("\n" + "="*70)
-print(" ✅ Program loaded successfully!")
-print(" 📘 Read documentation above for usage guide")
-print(" 🚀 Run main() to start interactive menu")
+print("  Program loaded successfully!")
+print("  Read documentation above for usage guide")
+print("  Run main() to start interactive menu")
 print("="*70 + "\n")
