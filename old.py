@@ -83,12 +83,12 @@ FOOD_DATABASE = {
         {'nama': 'Yogurt', 'kalori': 59, 'protein': 3.5, 'karbo': 4.7, 'harga': 12000},
         {'nama': 'Kopi Susu', 'kalori': 38, 'protein': 2, 'karbo': 5, 'harga': 3000},
         {'nama': 'Jus Alpukat', 'kalori': 160, 'protein': 2, 'karbo': 8.5, 'harga': 10000},
-        {'nama': 'Air Putih', 'kalori': 0, 'protein': 0, 'karbo': 0, 'harga': 800},
+        {'nama': 'Air Putih', 'kalori': 0, 'protein': 0, 'karbo': 0, 'harga': 0},
         {'nama': 'Jus Tomat', 'kalori': 17, 'protein': 0.8, 'karbo': 3.9, 'harga': 6000},
     ]
 }
 
-# Flatten database
+# Flatten database untuk akses mudah
 # ALL_FOODS[i] = makanan ke-i (i = 0..49)
 ALL_FOODS = []
 CATEGORY_START = {}  # Start index untuk setiap kategori
@@ -314,19 +314,6 @@ class GeneticAlgorithm:
         self.best_fitness_history = []
         self.avg_fitness_history = []
     
-    # def initialize_population(self):
-    #     """
-    #     Create initial population randomly
-        
-    #     Returns: List of individuals (each = array 50 elemen)
-    #     """
-    #     population = []
-    #     for _ in range(self.pop_size):
-    #         # Random portions 0-300g per food
-    #         individual = np.random.uniform(0, 300, NUM_FOODS)
-    #         population.append(individual)
-    #     return population
-
     def initialize_population(self):
         """
         Create initial population randomly
@@ -335,49 +322,19 @@ class GeneticAlgorithm:
         """
         population = []
         for _ in range(self.pop_size):
-            individual = np.zeros(NUM_FOODS)
-            
-            # Strategy: Pilih sedikit makanan per kategori, porsi wajar
-            for category in FOOD_DATABASE.keys():
-                start_idx = CATEGORY_START[category]
-                category_size = len(FOOD_DATABASE[category])
-                
-                # Pilih 1-2 makanan per kategori (hindari terlalu banyak variasi)
-                max_items = MAX_ITEMS_PER_CATEGORY[category]
-                n_items = np.random.randint(1, min(max_items + 1, 3))
-                
-                # Pilih index secara random
-                selected_indices = np.random.choice(category_size, n_items, replace=False)
-                
-                # Distribusi porsi berdasarkan kategori (agar realistic)
-                if category == 'karbohidrat':
-                    total_for_category = np.random.uniform(250, 400)
-                elif category == 'protein':
-                    total_for_category = np.random.uniform(100, 200)
-                elif category == 'sayur':
-                    total_for_category = np.random.uniform(150, 300)
-                elif category == 'buah':
-                    total_for_category = np.random.uniform(150, 250)
-                else:  # minuman
-                    total_for_category = np.random.uniform(200, 400)
-                
-                # Bagi ke selected items
-                portions = np.random.dirichlet(np.ones(n_items)) * total_for_category
-                
-                for idx, portion in zip(selected_indices, portions):
-                    food_idx = start_idx + idx
-                    # Pastikan minimal 50g jika dipilih
-                    individual[food_idx] = max(portion, MIN_PORTION_PER_FOOD)
-            
+            # Random portions 0-300g per food
+            individual = np.random.uniform(0, 300, NUM_FOODS)
             population.append(individual)
         return population
     
     def tournament_selection(self, population, fitnesses, k=3):
         """
         Tournament selection
+        
         Process:
         1. Pilih k individu random
         2. Return yang fitness-nya tertinggi
+        
         Args:
             population: List of individuals
             fitnesses: List of fitness values
@@ -401,7 +358,7 @@ class GeneticAlgorithm:
         1. Pilih random crossover point
         2. Tukar segmen setelah crossover point
         
-        kayak:
+        Example:
           parent1 = [a1, a2, | a3, a4, a5]  (point=2)
           parent2 = [b1, b2, | b3, b4, b5]
           →
@@ -434,11 +391,6 @@ class GeneticAlgorithm:
         
         Args:
             individual: Array 50 elemen
-
-        Perbaikan:
-        - σ tidak fixed (30), tapi 15% dari current value
-        - Enforce minimum portion (50g)
-        - Probabilitas add makanan baru lebih kecil
         
         Returns: Mutated individual
         """
@@ -446,75 +398,13 @@ class GeneticAlgorithm:
         
         for i in range(NUM_FOODS):
             if np.random.rand() < self.pm:
-                current_value = mutated[i]
-                
-                if current_value >= MIN_PORTION_PER_FOOD:
-                    # === Makanan yang sudah dipilih ===
-                    # Mutation dengan σ = 15% dari current value (adaptif!)
-                    sigma = current_value * 0.15
-                    noise = np.random.normal(0, sigma)
-                    mutated[i] += noise
-                    
-                    # Enforce bounds
-                    if mutated[i] < MIN_PORTION_PER_FOOD:
-                        # Jika hasil mutation < 50g, set ke 0 (hapus)
-                        mutated[i] = 0
-                    else:
-                        # Clip ke range valid
-                        mutated[i] = np.clip(mutated[i], MIN_PORTION_PER_FOOD, 500)
-                
-                elif current_value == 0:
-                    # === Makanan yang belum dipilih ===
-                    # 15% chance untuk add makanan baru (lebih konservatif)
-                    if np.random.rand() < 0.15:
-                        mutated[i] = np.random.uniform(MIN_PORTION_PER_FOOD, 150)
+                # Add Gaussian noise
+                noise = np.random.normal(0, 30)  # std=30
+                mutated[i] += noise
+                # Clip to valid range
+                mutated[i] = np.clip(mutated[i], 0, 500)
         
         return mutated
-    
-    def repair_solution(self, individual):
-        """
-        Repair solution untuk enforce hard constraints C6, C7, C8
-        
-        Post-processing untuk memastikan feasibility
-        """
-        repaired = individual.copy()
-        
-        # === C6: Enforce minimum portion ===
-        # Eliminasi porsi awkward (0 < portion < 50)
-        for i in range(NUM_FOODS):
-            if 0 < repaired[i] < MIN_PORTION_PER_FOOD:
-                repaired[i] = 0
-        
-        # === C7: Enforce max items per category ===
-        for category, max_items in MAX_ITEMS_PER_CATEGORY.items():
-            start_idx = CATEGORY_START[category]
-            end_idx = start_idx + len(FOOD_DATABASE[category])
-            
-            # Get items yang aktif (portion >= 50)
-            category_items = []
-            for i in range(start_idx, end_idx):
-                if repaired[i] >= MIN_PORTION_PER_FOOD:
-                    category_items.append((i, repaired[i]))
-            
-            # Jika melebihi max, hapus yang porsinya paling kecil
-            if len(category_items) > max_items:
-                # Sort by portion (ascending)
-                category_items.sort(key=lambda x: x[1])
-                
-                # Remove excess items
-                n_remove = len(category_items) - max_items
-                for i in range(n_remove):
-                    idx = category_items[i][0]
-                    repaired[idx] = 0
-        
-        # === C8: Ensure staple food minimum ===
-        staple_total = sum(repaired[idx] for idx in STAPLE_FOOD_INDICES)
-        if staple_total < MIN_STAPLE_PORTION:
-            # Tambahkan kekurangan ke Nasi Putih (index 10)
-            deficit = MIN_STAPLE_PORTION - staple_total
-            repaired[10] += deficit
-        
-        return repaired
     
     def evolve(self, verbose=True):
         """
@@ -590,9 +480,6 @@ class GeneticAlgorithm:
                 # === MUTATION ===
                 child1 = self.mutate(child1)
                 child2 = self.mutate(child2)
-
-                child1 = self.repair_solution(child1)
-                child2 = self.repair_solution(child2)
                 
                 new_population.append(child1)
                 if len(new_population) < self.pop_size:
@@ -608,10 +495,6 @@ class GeneticAlgorithm:
             print(f"GA Completed in {elapsed_time:.2f} seconds")
             print(f"Best Fitness: {best_fitness:.6f}")
             print(f"{'='*60}\n")
-
-        # Final repair untuk best solution
-        best_solution = self.repair_solution(best_solution)
-        best_fitness = fitness_function(best_solution)
         
         return best_solution, best_fitness, {
             'best_history': self.best_fitness_history,
@@ -647,52 +530,6 @@ class ParticleSwarmOptimization:
         self.c2 = c2  # social coefficient
         self.best_fitness_history = []
         self.avg_fitness_history = []
-
-    def repair_solution(self, individual):
-        """
-        Repair solution untuk enforce hard constraints C6, C7, C8
-        
-        Post-processing untuk memastikan feasibility
-        (Sama seperti GA repair)
-        """
-        repaired = individual.copy()
-        
-        # === C6: Enforce minimum portion ===
-        # Eliminasi porsi awkward (0 < portion < 50)
-        for i in range(NUM_FOODS):
-            if 0 < repaired[i] < MIN_PORTION_PER_FOOD:
-                repaired[i] = 0
-        
-        # === C7: Enforce max items per category ===
-        for category, max_items in MAX_ITEMS_PER_CATEGORY.items():
-            start_idx = CATEGORY_START[category]
-            end_idx = start_idx + len(FOOD_DATABASE[category])
-            
-            # Get items yang aktif (portion >= 50)
-            category_items = []
-            for i in range(start_idx, end_idx):
-                if repaired[i] >= MIN_PORTION_PER_FOOD:
-                    category_items.append((i, repaired[i]))
-            
-            # Jika melebihi max, hapus yang porsinya paling kecil
-            if len(category_items) > max_items:
-                # Sort by portion (ascending)
-                category_items.sort(key=lambda x: x[1])
-                
-                # Remove excess items
-                n_remove = len(category_items) - max_items
-                for i in range(n_remove):
-                    idx = category_items[i][0]
-                    repaired[idx] = 0
-        
-        # === C8: Ensure staple food minimum ===
-        staple_total = sum(repaired[idx] for idx in STAPLE_FOOD_INDICES)
-        if staple_total < MIN_STAPLE_PORTION:
-            # Tambahkan kekurangan ke Nasi Putih (index 10)
-            deficit = MIN_STAPLE_PORTION - staple_total
-            repaired[10] += deficit
-        
-        return repaired
     
     def optimize(self, verbose=True):
         """
@@ -765,9 +602,6 @@ class ParticleSwarmOptimization:
                 
                 # Clip to valid range [0, 500]
                 positions[i] = np.clip(positions[i], 0, 500)
-
-                # === REPAIR (TAMBAHKAN INI - BARU!) ===
-                positions[i] = self.repair_solution(positions[i])
             
             # Track history
             self.best_fitness_history.append(gbest_fitness)
@@ -779,10 +613,6 @@ class ParticleSwarmOptimization:
                       f"Avg: {np.mean(pbest_fitness):.6f}")
         
         elapsed_time = time.time() - start_time
-
-        # === Final repair untuk gbest ===
-        gbest_position = self.repair_solution(gbest_position)
-        gbest_fitness = fitness_function(gbest_position)
         
         if verbose:
             print(f"\n{'='*60}")
@@ -868,8 +698,6 @@ def print_menu_detail(solution: np.ndarray, day_number: int = None):
     for category, max_items in MAX_ITEMS_PER_CATEGORY.items():
         start_idx = CATEGORY_START[category]
         end_idx = start_idx + len(FOOD_DATABASE[category])
-        
-        # Hanya hitung yang ≥ MIN_PORTION_PER_FOOD
         items = np.sum(solution[start_idx:end_idx] >= MIN_PORTION_PER_FOOD)
         
         if items > max_items:
@@ -1681,6 +1509,7 @@ if __name__ == "__main__":
 def validate_solution(solution: np.ndarray) -> Dict:
     """
     Validasi apakah solusi memenuhi semua constraints
+    
     Args:
         solution: Array 50 elemen
     
