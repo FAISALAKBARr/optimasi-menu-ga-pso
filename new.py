@@ -1,13 +1,13 @@
-# NUTRITION OPTIMIZATION USING GA & PSO - COMPLETE VERSION
+# NUTRITION OPTIMIZATION USING GA & PSO
 # Project: Optimasi Menu Makanan Seimbang (4 Sehat 5 Sempurna)
-# Author: Mochamad Faisal Akbar (L0122094)
-# Course: Kecerdasan Komputasional
+# Kelompok 8
+# Nama: Mochamad Faisal Akbar (L0122094)
+# Matkul: Kecerdasan Komputasional
 # Features: 
 #   - GA vs PSO comparison
 #   - 7-day menu generation
 #   - Statistical analysis (t-test over 30 runs)
 #   - Comprehensive reporting
-
 
 import numpy as np
 import pandas as pd
@@ -18,11 +18,9 @@ import time
 import os
 from datetime import datetime
 
-
 # 1. DATASET - 50 Makanan Indonesia (10 per kategori)
 # Sumber: Tabel Komposisi Pangan Indonesia (TKPI) 2017
 # Harga: Random sesuai toko online dan Estimasi pasar Surakarta 2025
-
 FOOD_DATABASE = {
     'buah': [
         {'nama': 'Pisang', 'kalori': 89, 'protein': 1.1, 'karbo': 22.8, 'harga': 8000},    
@@ -268,7 +266,6 @@ def fitness_function(portions: np.ndarray) -> float:
 
 # 4. GENETIC ALGORITHM (GA)
 class GeneticAlgorithm:
-    
     def __init__(self, pop_size=30, generations=50, pc=0.8, pm=0.2):
         self.pop_size = pop_size
         self.generations = generations
