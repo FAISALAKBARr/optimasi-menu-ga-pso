@@ -1149,17 +1149,17 @@ output_files = [
 ]
 
 for file in output_files:
-    print(f"\n{file}")
+    print(f"   ✓ {file}")
 
 print("\n" + "="*80)
-print("ANALYSIS COMPLETED SUCCESSFULLY!")
+print("DATA MINING PROJECT COMPLETED SUCCESSFULLY!")
 print("="*80)
-print("\nThank you for using this Data Mining Analysis Tool")
-print("Kelompok:")
+print("\nKelompok:")
 print("  - MOCHAMAD FAISAL AKBAR (L0122094)")
 print("  - JASSON FRANKLYN WANG (L0122081)")
 print("  - FARRAS ARKAN WARDANA (L0123052)")
 print("\nProgram Studi Informatika")
 print("Fakultas Teknologi Informasi dan Sains Data")
-print("Universitas Sebelas Maret - 2025")
+print("Universitas Sebelas Maret")
+print("2025")
 print("="*80)

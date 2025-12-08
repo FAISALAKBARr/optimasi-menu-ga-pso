@@ -1,0 +1,1915 @@
+(.venv) PS D:\TUGAS\SEMESTER 7\CI\repo ci\python> python new.py
+(M) Total makanan dalam database: 50
+
+======================================================================
+                    NUTRITION OPTIMIZATION SYSTEM
+                         GA vs PSO Comparison
+======================================================================
+
+
+──────────────────────────────────────────────────────────────────────
+                              MENU UTAMA
+──────────────────────────────────────────────────────────────────────
+1. Run Single Day - GA vs PSO
+2. Generate Weekly Menu (7 Days)
+3. Statistical Analysis (30 Runs)
+4. Quick Demo (Best Solution)
+5. Verification Test (Constraint Satisfaction)
+6. Exit
+──────────────────────────────────────────────────────────────────────
+
+Pilih menu (1-6): 1
+
+======================================================================
+                       SINGLE DAY OPTIMIZATION
+======================================================================
+
+============================================================
+ GENETIC ALGORITHM
+============================================================
+Population: 30 | Generations: 50
+Crossover Rate: 0.8 | Mutation Rate: 0.2
+============================================================
+
+Gen   0 | Best Fitness: 0.024461 | Avg: 0.004431
+Gen  10 | Best Fitness: 0.049871 | Avg: 0.043067
+Gen  20 | Best Fitness: 0.052639 | Avg: 0.043429
+Gen  30 | Best Fitness: 0.054505 | Avg: 0.044803
+Gen  40 | Best Fitness: 0.055835 | Avg: 0.046429
+Gen  49 | Best Fitness: 0.057970 | Avg: 0.047433
+
+────────────────────────────────────────────────────────────
+Performing final aggressive repair...
+────────────────────────────────────────────────────────────
+GA Completed in 0.20 seconds
+Best Fitness: 0.058889
+✓ ALL CONSTRAINTS SATISFIED
+============================================================
+
+
+============================================================
+ PARTICLE SWARM OPTIMIZATION
+============================================================
+Particles: 30 | Iterations: 50
+w: 0.7 | c1: 1.5 | c2: 1.5
+============================================================
+
+Iter   0 | Best Fitness: 0.000024 | Avg: 0.000012
+Iter  10 | Best Fitness: 0.038168 | Avg: 0.022305
+Iter  20 | Best Fitness: 0.056709 | Avg: 0.049258
+Iter  30 | Best Fitness: 0.058254 | Avg: 0.055622
+Iter  40 | Best Fitness: 0.058280 | Avg: 0.056991
+Iter  49 | Best Fitness: 0.058297 | Avg: 0.057473
+
+────────────────────────────────────────────────────────────
+Performing final aggressive repair...
+────────────────────────────────────────────────────────────
+PSO Completed in 0.16 seconds
+Best Fitness: 0.058122
+✓ ALL CONSTRAINTS SATISFIED
+============================================================
+
+
+ GA - BEST MENU
+
+======================================================================
+                              MENU DETAIL
+======================================================================
+
+BUAH
+----------------------------------------------------------------------
+  • Pisang               :  213.9g  (Rp 1,711)
+  • Nanas                :   84.6g  (Rp 677)
+  Subtotal               : Rp 2,388
+
+KARBOHIDRAT
+----------------------------------------------------------------------
+  • Nasi Putih           :  217.5g  (Rp 2,827)
+  • Mie Instant          :  173.5g  (Rp 2,083)
+  Subtotal               : Rp 4,910
+
+PROTEIN
+----------------------------------------------------------------------
+  • Tempe                :  209.0g  (Rp 2,090)
+  • Kacang Hijau         :  100.5g  (Rp 2,212)
+  Subtotal               : Rp 4,302
+
+SAYUR
+----------------------------------------------------------------------
+  • Labu Siam            :  206.9g  (Rp 1,449)
+  Subtotal               : Rp 1,449
+
+MINUMAN
+----------------------------------------------------------------------
+  • Jus Jeruk            :  371.6g  (Rp 2,973)
+  • Air Putih            :  228.4g  (Rp 914)
+  Subtotal               : Rp 3,886
+
+======================================================================
+RINGKASAN NUTRISI
+----------------------------------------------------------------------
+  Kalori      :  1800.4 kkal (Memenuhi Target: 1800-2200)
+  Protein     :    84.6 g    (Memenuhi Target: ≥50)
+  Karbohidrat :   296.1 g    (Memenuhi Target: 250-350)
+  Biaya       : Rp 16,935  (Memenuhi Target: ≤Rp 50,000)
+======================================================================
+
+  VALIDASI CONSTRAINTS
+----------------------------------------------------------------------
+(M) C6: Semua porsi ≥ 50g
+(M) C7: buah = 2 jenis (max = 3)
+(M) C7: karbohidrat = 2 jenis (max = 2)
+(M) C7: protein = 2 jenis (max = 3)
+(M) C7: sayur = 1 jenis (max = 4)
+(M) C7: minuman = 2 jenis (max = 2)
+(M) C8: Staple food = 217.5g (min = 200g)
+(M) C5B: Minuman = 600.0ml (range: 600-900ml)
+======================================================================
+
+
+CATATAN PENGGUNAAN
+----------------------------------------------------------------------
+Menu di atas adalah total untuk 1 HARI (3x makan).
+Suggested distribution:
+  • Sarapan (30%): Karbo + Protein + Buah + Minuman (~200gr)
+  • Makan Siang (40%): Porsi terbesar, semua kategori (~300gr)
+  • Makan Malam (30%): Lebih ringan, Protein + Sayur (~200gr)
+  • Total Minuman: 600ml dari target 600-900 gr atau ml
+======================================================================
+
+
+ PSO - BEST MENU
+
+======================================================================
+                              MENU DETAIL
+======================================================================
+
+BUAH
+----------------------------------------------------------------------
+  • Pisang               :  373.3g  (Rp 2,987)
+  Subtotal               : Rp 2,987
+
+KARBOHIDRAT
+----------------------------------------------------------------------
+  • Nasi Putih           :  203.4g  (Rp 2,644)
+  • Mie Instant          :  306.0g  (Rp 3,671)
+  Subtotal               : Rp 6,316
+
+PROTEIN
+----------------------------------------------------------------------
+  • Tempe                :  307.4g  (Rp 3,074)
+  Subtotal               : Rp 3,074
+
+SAYUR
+----------------------------------------------------------------------
+  • Tomat                :  193.6g  (Rp 2,324)
+  Subtotal               : Rp 2,324
+
+MINUMAN
+----------------------------------------------------------------------
+  • Air Putih            :  600.0g  (Rp 2,400)
+  Subtotal               : Rp 2,400
+
+======================================================================
+RINGKASAN NUTRISI
+----------------------------------------------------------------------
+  Kalori      :  1800.1 kkal (Memenuhi Target: 1800-2200)
+  Protein     :    83.5 g    (Memenuhi Target: ≥50)
+  Karbohidrat :   259.9 g    (Memenuhi Target: 250-350)
+  Biaya       : Rp 17,100  (Memenuhi Target: ≤Rp 50,000)
+======================================================================
+
+  VALIDASI CONSTRAINTS
+----------------------------------------------------------------------
+(M) C6: Semua porsi ≥ 50g
+(M) C7: buah = 1 jenis (max = 3)
+(M) C7: karbohidrat = 2 jenis (max = 2)
+(M) C7: protein = 1 jenis (max = 3)
+(M) C7: sayur = 1 jenis (max = 4)
+(M) C7: minuman = 1 jenis (max = 2)
+(M) C8: Staple food = 203.4g (min = 200g)
+(M) C5B: Minuman = 600.0ml (range: 600-900ml)
+======================================================================
+
+
+CATATAN PENGGUNAAN
+----------------------------------------------------------------------
+Menu di atas adalah total untuk 1 HARI (3x makan).
+Suggested distribution:
+  • Sarapan (30%): Karbo + Protein + Buah + Minuman (~200gr)
+  • Makan Siang (40%): Porsi terbesar, semua kategori (~300gr)
+  • Makan Malam (30%): Lebih ringan, Protein + Sayur (~200gr)
+  • Total Minuman: 600ml dari target 600-900 gr atau ml
+======================================================================
+
+
+======================================================================
+                        PERBANDINGAN GA vs PSO
+======================================================================
+
+Metric                                      GA             PSO     Winner
+----------------------------------------------------------------------
+1. Best Fitness                       0.058889        0.058122         GA
+2. Total Cost (Rp)                      16,935          17,100         GA
+3. Computation Time (s)                   0.20            0.16        PSO
+4. Convergence Speed (iter)                 44              15        PSO
+======================================================================
+
+Nutritional Values                          GA             PSO               Target
+----------------------------------------------------------------------
+Kalori (kkal)                           1800.4          1800.1 1800-  2200
+Protein (g)                               84.6            83.5 ≥     50
+Karbohidrat (g)                          296.1           259.9 250-   350
+======================================================================
+
+
+──────────────────────────────────────────────────────────────────────
+                              MENU UTAMA
+──────────────────────────────────────────────────────────────────────
+1. Run Single Day - GA vs PSO
+2. Generate Weekly Menu (7 Days)
+3. Statistical Analysis (30 Runs)
+4. Quick Demo (Best Solution)
+5. Verification Test (Constraint Satisfaction)
+6. Exit
+──────────────────────────────────────────────────────────────────────
+
+Pilih menu (1-6): 1
+
+======================================================================
+                       SINGLE DAY OPTIMIZATION
+======================================================================
+
+============================================================
+ GENETIC ALGORITHM
+============================================================
+Population: 30 | Generations: 50
+Crossover Rate: 0.8 | Mutation Rate: 0.2
+============================================================
+
+Gen   0 | Best Fitness: 0.010737 | Avg: 0.002941
+Gen  10 | Best Fitness: 0.044985 | Avg: 0.038391
+Gen  20 | Best Fitness: 0.050825 | Avg: 0.047395
+Gen  30 | Best Fitness: 0.052976 | Avg: 0.043690
+Gen  40 | Best Fitness: 0.054127 | Avg: 0.047540
+Gen  49 | Best Fitness: 0.054499 | Avg: 0.046423
+
+────────────────────────────────────────────────────────────
+Performing final aggressive repair...
+────────────────────────────────────────────────────────────
+GA Completed in 0.20 seconds
+Best Fitness: 0.053828
+✓ ALL CONSTRAINTS SATISFIED
+============================================================
+
+
+============================================================
+ PARTICLE SWARM OPTIMIZATION
+============================================================
+Particles: 30 | Iterations: 50
+w: 0.7 | c1: 1.5 | c2: 1.5
+============================================================
+
+Iter   0 | Best Fitness: 0.000019 | Avg: 0.000011
+Iter  10 | Best Fitness: 0.039760 | Avg: 0.020067
+Iter  20 | Best Fitness: 0.054057 | Avg: 0.044965
+Iter  30 | Best Fitness: 0.054263 | Avg: 0.050437
+Iter  40 | Best Fitness: 0.054920 | Avg: 0.053052
+Iter  49 | Best Fitness: 0.055069 | Avg: 0.053807
+
+────────────────────────────────────────────────────────────
+Performing final aggressive repair...
+────────────────────────────────────────────────────────────
+PSO Completed in 0.16 seconds
+Best Fitness: 0.054916
+✗ VIOLATIONS DETECTED: 1
+  - C3: Karbo = 350.3g (target: 250-350g)
+============================================================
+
+
+ GA - BEST MENU
+
+======================================================================
+                              MENU DETAIL
+======================================================================
+
+BUAH
+----------------------------------------------------------------------
+  • Semangka             :  181.0g  (Rp 1,086)
+  Subtotal               : Rp 1,086
+
+KARBOHIDRAT
+----------------------------------------------------------------------
+  • Nasi Putih           :  200.0g  (Rp 2,600)
+  • Kentang              :  135.7g  (Rp 1,357)
+  Subtotal               : Rp 3,957
+
+PROTEIN
+----------------------------------------------------------------------
+  • Tempe                :  136.6g  (Rp 1,366)
+  • Kacang Hijau         :  156.5g  (Rp 3,442)
+  Subtotal               : Rp 4,808
+
+SAYUR
+----------------------------------------------------------------------
+  • Brokoli              :   54.3g  (Rp 977)
+  • Labu Siam            :  137.0g  (Rp 959)
+  Subtotal               : Rp 1,936
+
+MINUMAN
+----------------------------------------------------------------------
+  • Jus Jeruk            :  324.5g  (Rp 2,596)
+  • Jus Alpukat          :  275.5g  (Rp 4,132)
+  Subtotal               : Rp 6,728
+
+======================================================================
+RINGKASAN NUTRISI
+----------------------------------------------------------------------
+  Kalori      :  1856.7 kkal (Memenuhi Target: 1800-2200)
+  Protein     :    83.1 g    (Memenuhi Target: ≥50)
+  Karbohidrat :   270.2 g    (Memenuhi Target: 250-350)
+  Biaya       : Rp 18,516  (Memenuhi Target: ≤Rp 50,000)
+======================================================================
+
+  VALIDASI CONSTRAINTS
+----------------------------------------------------------------------
+(M) C6: Semua porsi ≥ 50g
+(M) C7: buah = 1 jenis (max = 3)
+(M) C7: karbohidrat = 2 jenis (max = 2)
+(M) C7: protein = 2 jenis (max = 3)
+(M) C7: sayur = 2 jenis (max = 4)
+(M) C7: minuman = 2 jenis (max = 2)
+(M) C8: Staple food = 200.0g (min = 200g)
+(M) C5B: Minuman = 600.0ml (range: 600-900ml)
+======================================================================
+
+
+CATATAN PENGGUNAAN
+----------------------------------------------------------------------
+Menu di atas adalah total untuk 1 HARI (3x makan).
+Suggested distribution:
+  • Sarapan (30%): Karbo + Protein + Buah + Minuman (~200gr)
+  • Makan Siang (40%): Porsi terbesar, semua kategori (~300gr)
+  • Makan Malam (30%): Lebih ringan, Protein + Sayur (~200gr)
+  • Total Minuman: 600ml dari target 600-900 gr atau ml
+======================================================================
+
+
+ PSO - BEST MENU
+
+======================================================================
+                              MENU DETAIL
+======================================================================
+
+BUAH
+----------------------------------------------------------------------
+  • Semangka             :  152.9g  (Rp 918)
+  Subtotal               : Rp 918
+
+KARBOHIDRAT
+----------------------------------------------------------------------
+  • Nasi Putih           :  210.0g  (Rp 2,730)
+  • Jagung               :  300.7g  (Rp 2,405)
+  Subtotal               : Rp 5,135
+
+PROTEIN
+----------------------------------------------------------------------
+  • Kacang Hijau         :  339.6g  (Rp 7,472)
+  Subtotal               : Rp 7,472
+
+SAYUR
+----------------------------------------------------------------------
+  • Bayam                :  122.9g  (Rp 860)
+  • Labu Siam            :   83.0g  (Rp 581)
+  Subtotal               : Rp 1,441
+
+MINUMAN
+----------------------------------------------------------------------
+  • Air Putih            :  600.0g  (Rp 2,400)
+  Subtotal               : Rp 2,400
+
+======================================================================
+RINGKASAN NUTRISI
+----------------------------------------------------------------------
+  Kalori      :  1800.0 kkal (Memenuhi Target: 1800-2200)
+  Protein     :   102.3 g    (Memenuhi Target: ≥50)
+  Karbohidrat :   350.3 g    (Tidak Memenuhi Target: 250-350)
+  Biaya       : Rp 17,366  (Memenuhi Target: ≤Rp 50,000)
+======================================================================
+
+  VALIDASI CONSTRAINTS
+----------------------------------------------------------------------
+(M) C6: Semua porsi ≥ 50g
+(M) C7: buah = 1 jenis (max = 3)
+(M) C7: karbohidrat = 2 jenis (max = 2)
+(M) C7: protein = 1 jenis (max = 3)
+(M) C7: sayur = 2 jenis (max = 4)
+(M) C7: minuman = 1 jenis (max = 2)
+(M) C8: Staple food = 210.0g (min = 200g)
+(M) C5B: Minuman = 600.0ml (range: 600-900ml)
+======================================================================
+
+
+CATATAN PENGGUNAAN
+----------------------------------------------------------------------
+Menu di atas adalah total untuk 1 HARI (3x makan).
+Suggested distribution:
+  • Sarapan (30%): Karbo + Protein + Buah + Minuman (~200gr)
+  • Makan Siang (40%): Porsi terbesar, semua kategori (~300gr)
+  • Makan Malam (30%): Lebih ringan, Protein + Sayur (~200gr)
+  • Total Minuman: 600ml dari target 600-900 gr atau ml
+======================================================================
+
+
+======================================================================
+                        PERBANDINGAN GA vs PSO
+======================================================================
+
+Metric                                      GA             PSO     Winner
+----------------------------------------------------------------------
+1. Best Fitness                       0.053828        0.054916        PSO
+2. Total Cost (Rp)                      18,516          17,366        PSO
+3. Computation Time (s)                   0.20            0.16        PSO
+4. Convergence Speed (iter)                 24              18        PSO
+======================================================================
+
+Nutritional Values                          GA             PSO               Target
+----------------------------------------------------------------------
+Kalori (kkal)                           1856.7          1800.0 1800-  2200
+Protein (g)                               83.1           102.3 ≥     50
+Karbohidrat (g)                          270.2           350.3 250-   350
+======================================================================
+
+
+──────────────────────────────────────────────────────────────────────
+                              MENU UTAMA
+──────────────────────────────────────────────────────────────────────
+1. Run Single Day - GA vs PSO
+2. Generate Weekly Menu (7 Days)
+3. Statistical Analysis (30 Runs)
+4. Quick Demo (Best Solution)
+5. Verification Test (Constraint Satisfaction)
+6. Exit
+──────────────────────────────────────────────────────────────────────
+
+Pilih menu (1-6): 1
+
+======================================================================
+                       SINGLE DAY OPTIMIZATION
+======================================================================
+
+============================================================
+ GENETIC ALGORITHM
+============================================================
+Population: 30 | Generations: 50
+Crossover Rate: 0.8 | Mutation Rate: 0.2
+============================================================
+
+Gen   0 | Best Fitness: 0.047848 | Avg: 0.008957
+Gen  10 | Best Fitness: 0.056122 | Avg: 0.040019
+Gen  20 | Best Fitness: 0.059637 | Avg: 0.051913
+Gen  30 | Best Fitness: 0.060629 | Avg: 0.052229
+Gen  40 | Best Fitness: 0.060920 | Avg: 0.053206
+Gen  49 | Best Fitness: 0.061133 | Avg: 0.052547
+
+────────────────────────────────────────────────────────────
+Performing final aggressive repair...
+────────────────────────────────────────────────────────────
+GA Completed in 0.20 seconds
+Best Fitness: 0.060115
+✗ VIOLATIONS DETECTED: 2
+  - C3: Karbo = 358.0g (target: 250-350g)
+  - C6: 2 portions < 50g
+============================================================
+
+
+============================================================
+ PARTICLE SWARM OPTIMIZATION
+============================================================
+Particles: 30 | Iterations: 50
+w: 0.7 | c1: 1.5 | c2: 1.5
+============================================================
+
+Iter   0 | Best Fitness: 0.000027 | Avg: 0.000012
+Iter  10 | Best Fitness: 0.048228 | Avg: 0.038986
+Iter  20 | Best Fitness: 0.058606 | Avg: 0.054186
+Iter  30 | Best Fitness: 0.059019 | Avg: 0.057381
+Iter  40 | Best Fitness: 0.059087 | Avg: 0.058785
+Iter  49 | Best Fitness: 0.059087 | Avg: 0.058880
+
+────────────────────────────────────────────────────────────
+Performing final aggressive repair...
+────────────────────────────────────────────────────────────
+PSO Completed in 0.16 seconds
+Best Fitness: 0.058227
+✗ VIOLATIONS DETECTED: 1
+  - C6: 1 portions < 50g
+============================================================
+
+
+ GA - BEST MENU
+
+======================================================================
+                              MENU DETAIL
+======================================================================
+
+BUAH
+----------------------------------------------------------------------
+  • Semangka             :  157.2g  (Rp 943)
+  Subtotal               : Rp 943
+
+KARBOHIDRAT
+----------------------------------------------------------------------
+  • Nasi Putih           :   28.6g  (Rp 372)
+  • Roti Tawar           :  208.4g  (Rp 3,751)
+  • Singkong             :  127.4g  (Rp 764)
+  Subtotal               : Rp 4,887
+
+PROTEIN
+----------------------------------------------------------------------
+  • Kacang Hijau         :  181.1g  (Rp 3,985)
+  Subtotal               : Rp 3,985
+
+SAYUR
+----------------------------------------------------------------------
+  • Wortel               :  189.9g  (Rp 1,899)
+  Subtotal               : Rp 1,899
+
+MINUMAN
+----------------------------------------------------------------------
+  • Jus Jeruk            :  500.0g  (Rp 4,000)
+  • Kopi Susu            :   76.1g  (Rp 609)
+  • Air Putih            :   23.9g  (Rp 96)
+  Subtotal               : Rp 4,704
+
+======================================================================
+RINGKASAN NUTRISI
+----------------------------------------------------------------------
+  Kalori      :  1800.7 kkal (Memenuhi Target: 1800-2200)
+  Protein     :    72.5 g    (Memenuhi Target: ≥50)
+  Karbohidrat :   358.0 g    (Tidak Memenuhi Target: 250-350)
+  Biaya       : Rp 16,419  (Memenuhi Target: ≤Rp 50,000)
+======================================================================
+
+  VALIDASI CONSTRAINTS
+----------------------------------------------------------------------
+(TM) C6 VIOLATION: 2 makanan porsi < 50g
+(M) C7: buah = 1 jenis (max = 3)
+(M) C7: karbohidrat = 2 jenis (max = 2)
+(M) C7: protein = 1 jenis (max = 3)
+(M) C7: sayur = 1 jenis (max = 4)
+(M) C7: minuman = 2 jenis (max = 2)
+(M) C8: Staple food = 237.0g (min = 200g)
+(M) C5B: Minuman = 600.0ml (range: 600-900ml)
+======================================================================
+
+
+CATATAN PENGGUNAAN
+----------------------------------------------------------------------
+Menu di atas adalah total untuk 1 HARI (3x makan).
+Suggested distribution:
+  • Sarapan (30%): Karbo + Protein + Buah + Minuman (~200gr)
+  • Makan Siang (40%): Porsi terbesar, semua kategori (~300gr)
+  • Makan Malam (30%): Lebih ringan, Protein + Sayur (~200gr)
+  • Total Minuman: 600ml dari target 600-900 gr atau ml
+======================================================================
+
+
+ PSO - BEST MENU
+
+======================================================================
+                              MENU DETAIL
+======================================================================
+
+BUAH
+----------------------------------------------------------------------
+  • Melon                :  145.5g  (Rp 1,455)
+  Subtotal               : Rp 1,455
+
+KARBOHIDRAT
+----------------------------------------------------------------------
+  • Roti Tawar           :  414.8g  (Rp 7,466)
+  Subtotal               : Rp 7,466
+
+PROTEIN
+----------------------------------------------------------------------
+  • Kacang Hijau         :  172.9g  (Rp 3,803)
+  Subtotal               : Rp 3,803
+
+SAYUR
+----------------------------------------------------------------------
+  • Terong               :  196.0g  (Rp 1,764)
+  Subtotal               : Rp 1,764
+
+MINUMAN
+----------------------------------------------------------------------
+  • Air Putih            :  600.0g  (Rp 2,400)
+  Subtotal               : Rp 2,400
+
+======================================================================
+RINGKASAN NUTRISI
+----------------------------------------------------------------------
+  Kalori      :  1800.1 kkal (Memenuhi Target: 1800-2200)
+  Protein     :    82.0 g    (Memenuhi Target: ≥50)
+  Karbohidrat :   336.1 g    (Memenuhi Target: 250-350)
+  Biaya       : Rp 16,914  (Memenuhi Target: ≤Rp 50,000)
+======================================================================
+
+  VALIDASI CONSTRAINTS
+----------------------------------------------------------------------
+(TM) C6 VIOLATION: 1 makanan porsi < 50g
+(M) C7: buah = 1 jenis (max = 3)
+(M) C7: karbohidrat = 1 jenis (max = 2)
+(M) C7: protein = 1 jenis (max = 3)
+(M) C7: sayur = 1 jenis (max = 4)
+(M) C7: minuman = 1 jenis (max = 2)
+(M) C8: Staple food = 416.8g (min = 200g)
+(M) C5B: Minuman = 600.0ml (range: 600-900ml)
+======================================================================
+
+
+CATATAN PENGGUNAAN
+----------------------------------------------------------------------
+Menu di atas adalah total untuk 1 HARI (3x makan).
+Suggested distribution:
+  • Sarapan (30%): Karbo + Protein + Buah + Minuman (~200gr)
+  • Makan Siang (40%): Porsi terbesar, semua kategori (~300gr)
+  • Makan Malam (30%): Lebih ringan, Protein + Sayur (~200gr)
+  • Total Minuman: 600ml dari target 600-900 gr atau ml
+======================================================================
+
+
+======================================================================
+                        PERBANDINGAN GA vs PSO
+======================================================================
+
+Metric                                      GA             PSO     Winner
+----------------------------------------------------------------------
+1. Best Fitness                       0.060115        0.058227         GA
+2. Total Cost (Rp)                      16,419          16,914         GA
+3. Computation Time (s)                   0.20            0.16        PSO
+4. Convergence Speed (iter)                 15              14        PSO
+======================================================================
+
+Nutritional Values                          GA             PSO               Target
+----------------------------------------------------------------------
+Kalori (kkal)                           1800.7          1800.1 1800-  2200
+Protein (g)                               72.5            82.0 ≥     50
+Karbohidrat (g)                          358.0           336.1 250-   350
+======================================================================
+
+
+──────────────────────────────────────────────────────────────────────
+                              MENU UTAMA
+──────────────────────────────────────────────────────────────────────
+1. Run Single Day - GA vs PSO
+2. Generate Weekly Menu (7 Days)
+3. Statistical Analysis (30 Runs)
+4. Quick Demo (Best Solution)
+5. Verification Test (Constraint Satisfaction)
+6. Exit
+──────────────────────────────────────────────────────────────────────
+
+Pilih menu (1-6): 2
+Generate menu untuk 7 hari
+Pilih algoritma:
+1. Genetic Algorithm (GA)
+2. Particle Swarm Optimization (PSO)
+3. Both (GA + PSO)
+
+Pilih (1-3): 3
+Tampilkan detail menu? (y/n): y
+
+======================================================================
+                         GENERATE MENU 7 HARI
+======================================================================
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                            HARI 1: Senin
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+======================================================================
+                         MENU DETAIL - HARI 1
+======================================================================
+
+BUAH
+----------------------------------------------------------------------
+  • Pepaya               :  151.4g  (Rp 1,211)
+  Subtotal               : Rp 1,211
+
+KARBOHIDRAT
+----------------------------------------------------------------------
+  • Nasi Putih           :  383.4g  (Rp 4,984)
+  • Mie Instant          :  239.6g  (Rp 2,875)
+  Subtotal               : Rp 7,859
+
+PROTEIN
+----------------------------------------------------------------------
+  • Tempe                :  300.6g  (Rp 3,006)
+  Subtotal               : Rp 3,006
+
+SAYUR
+----------------------------------------------------------------------
+  • Kol                  :  193.1g  (Rp 1,545)
+  Subtotal               : Rp 1,545
+
+MINUMAN
+----------------------------------------------------------------------
+  • Jus Alpukat          :  278.6g  (Rp 4,178)
+  • Air Putih            :  321.4g  (Rp 1,286)
+  Subtotal               : Rp 5,464
+
+======================================================================
+RINGKASAN NUTRISI
+----------------------------------------------------------------------
+  Kalori      :  2088.0 kkal (Memenuhi Target: 1800-2200)
+  Protein     :    87.1 g    (Memenuhi Target: ≥50)
+  Karbohidrat :   251.0 g    (Memenuhi Target: 250-350)
+  Biaya       : Rp 19,085  (Memenuhi Target: ≤Rp 50,000)
+======================================================================
+
+  VALIDASI CONSTRAINTS
+----------------------------------------------------------------------
+(M) C6: Semua porsi ≥ 50g
+(M) C7: buah = 1 jenis (max = 3)
+(M) C7: karbohidrat = 2 jenis (max = 2)
+(M) C7: protein = 1 jenis (max = 3)
+(M) C7: sayur = 1 jenis (max = 4)
+(M) C7: minuman = 2 jenis (max = 2)
+(M) C8: Staple food = 383.4g (min = 200g)
+(M) C5B: Minuman = 600.0ml (range: 600-900ml)
+======================================================================
+
+
+CATATAN PENGGUNAAN
+----------------------------------------------------------------------
+Menu di atas adalah total untuk 1 HARI (3x makan).
+Suggested distribution:
+  • Sarapan (30%): Karbo + Protein + Buah + Minuman (~200gr)
+  • Makan Siang (40%): Porsi terbesar, semua kategori (~300gr)
+  • Makan Malam (30%): Lebih ringan, Protein + Sayur (~200gr)
+  • Total Minuman: 600ml dari target 600-900 gr atau ml
+======================================================================
+
+ GA Fitness: 0.037474 | Cost: Rp 19,085
+
+======================================================================
+                         MENU DETAIL - HARI 1
+======================================================================
+
+BUAH
+----------------------------------------------------------------------
+  • Nanas                :  293.7g  (Rp 2,350)
+  Subtotal               : Rp 2,350
+
+KARBOHIDRAT
+----------------------------------------------------------------------
+  • Nasi Putih           :    5.9g  (Rp 77)
+  • Roti Tawar           :  500.0g  (Rp 9,000)
+  Subtotal               : Rp 9,077
+
+PROTEIN
+----------------------------------------------------------------------
+  • Tahu                 :  302.9g  (Rp 2,424)
+  Subtotal               : Rp 2,424
+
+SAYUR
+----------------------------------------------------------------------
+  • Timun                :   87.6g  (Rp 613)
+  • Labu Siam            :  109.9g  (Rp 769)
+  Subtotal               : Rp 1,382
+
+MINUMAN
+----------------------------------------------------------------------
+  • Susu Kedelai         :  104.4g  (Rp 1,253)
+  • Air Putih            :  495.6g  (Rp 1,982)
+  Subtotal               : Rp 3,235
+
+======================================================================
+RINGKASAN NUTRISI
+----------------------------------------------------------------------
+  Kalori      :  1800.2 kkal (Memenuhi Target: 1800-2200)
+  Protein     :    75.8 g    (Memenuhi Target: ≥50)
+  Karbohidrat :   305.0 g    (Memenuhi Target: 250-350)
+  Biaya       : Rp 18,467  (Memenuhi Target: ≤Rp 50,000)
+======================================================================
+
+  VALIDASI CONSTRAINTS
+----------------------------------------------------------------------
+(TM) C6 VIOLATION: 1 makanan porsi < 50g
+(M) C7: buah = 1 jenis (max = 3)
+(M) C7: karbohidrat = 1 jenis (max = 2)
+(M) C7: protein = 1 jenis (max = 3)
+(M) C7: sayur = 2 jenis (max = 4)
+(M) C7: minuman = 2 jenis (max = 2)
+(M) C8: Staple food = 505.9g (min = 200g)
+(M) C5B: Minuman = 600.0ml (range: 600-900ml)
+======================================================================
+
+
+CATATAN PENGGUNAAN
+----------------------------------------------------------------------
+Menu di atas adalah total untuk 1 HARI (3x makan).
+Suggested distribution:
+  • Sarapan (30%): Karbo + Protein + Buah + Minuman (~200gr)
+  • Makan Siang (40%): Porsi terbesar, semua kategori (~300gr)
+  • Makan Malam (30%): Lebih ringan, Protein + Sayur (~200gr)
+  • Total Minuman: 600ml dari target 600-900 gr atau ml
+======================================================================
+
+ PSO Fitness: 0.053506 | Cost: Rp 18,467
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                            HARI 2: Selasa
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+======================================================================
+                         MENU DETAIL - HARI 2
+======================================================================
+
+BUAH
+----------------------------------------------------------------------
+  • Pepaya               :   98.7g  (Rp 790)
+  • Melon                :   88.7g  (Rp 887)
+  Subtotal               : Rp 1,677
+
+KARBOHIDRAT
+----------------------------------------------------------------------
+  • Roti Tawar           :  250.9g  (Rp 4,516)
+  • Singkong             :  178.7g  (Rp 1,072)
+  Subtotal               : Rp 5,589
+
+PROTEIN
+----------------------------------------------------------------------
+  • Tempe                :  157.0g  (Rp 1,570)
+  Subtotal               : Rp 1,570
+
+SAYUR
+----------------------------------------------------------------------
+  • Bayam                :  245.2g  (Rp 1,716)
+  Subtotal               : Rp 1,716
+
+MINUMAN
+----------------------------------------------------------------------
+  • Jus Alpukat          :  381.7g  (Rp 5,725)
+  • Air Putih            :  218.3g  (Rp 873)
+  Subtotal               : Rp 6,598
+
+======================================================================
+RINGKASAN NUTRISI
+----------------------------------------------------------------------
+  Kalori      :  1993.5 kkal (Memenuhi Target: 1800-2200)
+  Protein     :    70.9 g    (Memenuhi Target: ≥50)
+  Karbohidrat :   264.2 g    (Memenuhi Target: 250-350)
+  Biaya       : Rp 17,150  (Memenuhi Target: ≤Rp 50,000)
+======================================================================
+
+  VALIDASI CONSTRAINTS
+----------------------------------------------------------------------
+(M) C6: Semua porsi ≥ 50g
+(M) C7: buah = 2 jenis (max = 3)
+(M) C7: karbohidrat = 2 jenis (max = 2)
+(M) C7: protein = 1 jenis (max = 3)
+(M) C7: sayur = 1 jenis (max = 4)
+(M) C7: minuman = 2 jenis (max = 2)
+(M) C8: Staple food = 250.9g (min = 200g)
+(M) C5B: Minuman = 600.0ml (range: 600-900ml)
+======================================================================
+
+
+CATATAN PENGGUNAAN
+----------------------------------------------------------------------
+Menu di atas adalah total untuk 1 HARI (3x makan).
+Suggested distribution:
+  • Sarapan (30%): Karbo + Protein + Buah + Minuman (~200gr)
+  • Makan Siang (40%): Porsi terbesar, semua kategori (~300gr)
+  • Makan Malam (30%): Lebih ringan, Protein + Sayur (~200gr)
+  • Total Minuman: 600ml dari target 600-900 gr atau ml
+======================================================================
+
+ GA Fitness: 0.058305 | Cost: Rp 17,150
+
+======================================================================
+                         MENU DETAIL - HARI 2
+======================================================================
+
+BUAH
+----------------------------------------------------------------------
+  • Semangka             :  174.3g  (Rp 1,046)
+  Subtotal               : Rp 1,046
+
+KARBOHIDRAT
+----------------------------------------------------------------------
+  • Nasi Putih           :  237.4g  (Rp 3,086)
+  • Jagung               :  262.6g  (Rp 2,101)
+  Subtotal               : Rp 5,187
+
+PROTEIN
+----------------------------------------------------------------------
+  • Kacang Hijau         :  333.7g  (Rp 7,341)
+  Subtotal               : Rp 7,341
+
+SAYUR
+----------------------------------------------------------------------
+  • Kol                  :  203.1g  (Rp 1,625)
+  Subtotal               : Rp 1,625
+
+MINUMAN
+----------------------------------------------------------------------
+  • Air Putih            :  600.0g  (Rp 2,400)
+  Subtotal               : Rp 2,400
+
+======================================================================
+RINGKASAN NUTRISI
+----------------------------------------------------------------------
+  Kalori      :  1795.3 kkal (Tidak Memenuhi Target: 1800-2200)
+  Protein     :    98.8 g    (Memenuhi Target: ≥50)
+  Karbohidrat :   352.7 g    (Tidak Memenuhi Target: 250-350)
+  Biaya       : Rp 17,598  (Memenuhi Target: ≤Rp 50,000)
+======================================================================
+
+  VALIDASI CONSTRAINTS
+----------------------------------------------------------------------
+(M) C6: Semua porsi ≥ 50g
+(M) C7: buah = 1 jenis (max = 3)
+(M) C7: karbohidrat = 2 jenis (max = 2)
+(M) C7: protein = 1 jenis (max = 3)
+(M) C7: sayur = 1 jenis (max = 4)
+(M) C7: minuman = 1 jenis (max = 2)
+(M) C8: Staple food = 237.4g (min = 200g)
+(M) C5B: Minuman = 600.0ml (range: 600-900ml)
+======================================================================
+
+
+CATATAN PENGGUNAAN
+----------------------------------------------------------------------
+Menu di atas adalah total untuk 1 HARI (3x makan).
+Suggested distribution:
+  • Sarapan (30%): Karbo + Protein + Buah + Minuman (~200gr)
+  • Makan Siang (40%): Porsi terbesar, semua kategori (~300gr)
+  • Makan Malam (30%): Lebih ringan, Protein + Sayur (~200gr)
+  • Total Minuman: 600ml dari target 600-900 gr atau ml
+======================================================================
+
+ PSO Fitness: 0.054975 | Cost: Rp 17,598
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                             HARI 3: Rabu
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+======================================================================
+                         MENU DETAIL - HARI 3
+======================================================================
+
+BUAH
+----------------------------------------------------------------------
+  • Pisang               :   87.6g  (Rp 701)
+  • Jeruk                :   52.3g  (Rp 628)
+  Subtotal               : Rp 1,329
+
+KARBOHIDRAT
+----------------------------------------------------------------------
+  • Nasi Putih           :  223.4g  (Rp 2,905)
+  • Singkong             :  160.1g  (Rp 961)
+  Subtotal               : Rp 3,866
+
+PROTEIN
+----------------------------------------------------------------------
+  • Tahu                 :   92.3g  (Rp 738)
+  • Kacang Hijau         :  121.2g  (Rp 2,666)
+  Subtotal               : Rp 3,404
+
+SAYUR
+----------------------------------------------------------------------
+  • Bayam                :  187.1g  (Rp 1,310)
+  Subtotal               : Rp 1,310
+
+MINUMAN
+----------------------------------------------------------------------
+  • Jus Jeruk            :  201.3g  (Rp 1,610)
+  • Jus Alpukat          :  398.7g  (Rp 5,980)
+  Subtotal               : Rp 7,591
+
+======================================================================
+RINGKASAN NUTRISI
+----------------------------------------------------------------------
+  Kalori      :  1911.4 kkal (Memenuhi Target: 1800-2200)
+  Protein     :    61.0 g    (Memenuhi Target: ≥50)
+  Karbohidrat :   288.5 g    (Memenuhi Target: 250-350)
+  Biaya       : Rp 17,499  (Memenuhi Target: ≤Rp 50,000)
+======================================================================
+
+  VALIDASI CONSTRAINTS
+----------------------------------------------------------------------
+(M) C6: Semua porsi ≥ 50g
+(M) C7: buah = 2 jenis (max = 3)
+(M) C7: karbohidrat = 2 jenis (max = 2)
+(M) C7: protein = 2 jenis (max = 3)
+(M) C7: sayur = 1 jenis (max = 4)
+(M) C7: minuman = 2 jenis (max = 2)
+(M) C8: Staple food = 223.4g (min = 200g)
+(M) C5B: Minuman = 600.0ml (range: 600-900ml)
+======================================================================
+
+
+CATATAN PENGGUNAAN
+----------------------------------------------------------------------
+Menu di atas adalah total untuk 1 HARI (3x makan).
+Suggested distribution:
+  • Sarapan (30%): Karbo + Protein + Buah + Minuman (~200gr)
+  • Makan Siang (40%): Porsi terbesar, semua kategori (~300gr)
+  • Makan Malam (30%): Lebih ringan, Protein + Sayur (~200gr)
+  • Total Minuman: 600ml dari target 600-900 gr atau ml
+======================================================================
+
+ GA Fitness: 0.056452 | Cost: Rp 17,499
+
+======================================================================
+                         MENU DETAIL - HARI 3
+======================================================================
+
+BUAH
+----------------------------------------------------------------------
+  • Semangka             :  162.4g  (Rp 974)
+  Subtotal               : Rp 974
+
+KARBOHIDRAT
+----------------------------------------------------------------------
+  • Roti Tawar           :  423.7g  (Rp 7,627)
+  Subtotal               : Rp 7,627
+
+PROTEIN
+----------------------------------------------------------------------
+  • Tempe                :  305.0g  (Rp 3,050)
+  Subtotal               : Rp 3,050
+
+SAYUR
+----------------------------------------------------------------------
+  • Kangkung             :  197.5g  (Rp 1,185)
+  Subtotal               : Rp 1,185
+
+MINUMAN
+----------------------------------------------------------------------
+  • Air Putih            :  600.0g  (Rp 2,400)
+  Subtotal               : Rp 2,400
+
+======================================================================
+RINGKASAN NUTRISI
+----------------------------------------------------------------------
+  Kalori      :  1800.0 kkal (Memenuhi Target: 1800-2200)
+  Protein     :   103.0 g    (Memenuhi Target: ≥50)
+  Karbohidrat :   254.5 g    (Memenuhi Target: 250-350)
+  Biaya       : Rp 15,259  (Memenuhi Target: ≤Rp 50,000)
+======================================================================
+
+  VALIDASI CONSTRAINTS
+----------------------------------------------------------------------
+(TM) C6 VIOLATION: 1 makanan porsi < 50g
+(M) C7: buah = 1 jenis (max = 3)
+(M) C7: karbohidrat = 1 jenis (max = 2)
+(M) C7: protein = 1 jenis (max = 3)
+(M) C7: sayur = 1 jenis (max = 4)
+(M) C7: minuman = 1 jenis (max = 2)
+(M) C8: Staple food = 425.5g (min = 200g)
+(M) C5B: Minuman = 600.0ml (range: 600-900ml)
+======================================================================
+
+
+CATATAN PENGGUNAAN
+----------------------------------------------------------------------
+Menu di atas adalah total untuk 1 HARI (3x makan).
+Suggested distribution:
+  • Sarapan (30%): Karbo + Protein + Buah + Minuman (~200gr)
+  • Makan Siang (40%): Porsi terbesar, semua kategori (~300gr)
+  • Makan Malam (30%): Lebih ringan, Protein + Sayur (~200gr)
+  • Total Minuman: 600ml dari target 600-900 gr atau ml
+======================================================================
+
+ PSO Fitness: 0.064475 | Cost: Rp 15,259
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                            HARI 4: Kamis
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+======================================================================
+                         MENU DETAIL - HARI 4
+======================================================================
+
+BUAH
+----------------------------------------------------------------------
+  • Pisang               :   59.1g  (Rp 473)
+  • Semangka             :  109.4g  (Rp 656)
+  Subtotal               : Rp 1,129
+
+KARBOHIDRAT
+----------------------------------------------------------------------
+  • Roti Tawar           :  395.4g  (Rp 7,118)
+  • Singkong             :  116.5g  (Rp 699)
+  Subtotal               : Rp 7,817
+
+PROTEIN
+----------------------------------------------------------------------
+  • Tempe                :  130.2g  (Rp 1,302)
+  • Kacang Merah         :   73.6g  (Rp 1,325)
+  Subtotal               : Rp 2,627
+
+SAYUR
+----------------------------------------------------------------------
+  • Bayam                :  217.8g  (Rp 1,525)
+  Subtotal               : Rp 1,525
+
+MINUMAN
+----------------------------------------------------------------------
+  • Kopi Susu            :  215.7g  (Rp 1,725)
+  • Air Putih            :  384.3g  (Rp 1,537)
+  Subtotal               : Rp 3,263
+
+======================================================================
+RINGKASAN NUTRISI
+----------------------------------------------------------------------
+  Kalori      :  1800.1 kkal (Memenuhi Target: 1800-2200)
+  Protein     :    80.4 g    (Memenuhi Target: ≥50)
+  Karbohidrat :   308.3 g    (Memenuhi Target: 250-350)
+  Biaya       : Rp 16,395  (Memenuhi Target: ≤Rp 50,000)
+======================================================================
+
+  VALIDASI CONSTRAINTS
+----------------------------------------------------------------------
+(TM) C6 VIOLATION: 1 makanan porsi < 50g
+(M) C7: buah = 2 jenis (max = 3)
+(M) C7: karbohidrat = 2 jenis (max = 2)
+(M) C7: protein = 2 jenis (max = 3)
+(M) C7: sayur = 1 jenis (max = 4)
+(M) C7: minuman = 2 jenis (max = 2)
+(M) C8: Staple food = 398.0g (min = 200g)
+(M) C5B: Minuman = 600.0ml (range: 600-900ml)
+======================================================================
+
+
+CATATAN PENGGUNAAN
+----------------------------------------------------------------------
+Menu di atas adalah total untuk 1 HARI (3x makan).
+Suggested distribution:
+  • Sarapan (30%): Karbo + Protein + Buah + Minuman (~200gr)
+  • Makan Siang (40%): Porsi terbesar, semua kategori (~300gr)
+  • Makan Malam (30%): Lebih ringan, Protein + Sayur (~200gr)
+  • Total Minuman: 600ml dari target 600-900 gr atau ml
+======================================================================
+
+ GA Fitness: 0.059784 | Cost: Rp 16,395
+
+======================================================================
+                         MENU DETAIL - HARI 4
+======================================================================
+
+BUAH
+----------------------------------------------------------------------
+  • Jeruk                :  397.9g  (Rp 4,775)
+  Subtotal               : Rp 4,775
+
+KARBOHIDRAT
+----------------------------------------------------------------------
+  • Nasi Putih           :  207.2g  (Rp 2,694)
+  • Pasta                :  330.1g  (Rp 7,262)
+  Subtotal               : Rp 9,957
+
+PROTEIN
+----------------------------------------------------------------------
+  • Tempe                :  350.2g  (Rp 3,502)
+  Subtotal               : Rp 3,502
+
+SAYUR
+----------------------------------------------------------------------
+  • Terong               :  244.9g  (Rp 2,204)
+  Subtotal               : Rp 2,204
+
+MINUMAN
+----------------------------------------------------------------------
+  • Air Putih            :  100.0g  (Rp 400)
+  • Jus Tomat            :  500.0g  (Rp 5,000)
+  Subtotal               : Rp 5,400
+
+======================================================================
+RINGKASAN NUTRISI
+----------------------------------------------------------------------
+  Kalori      :  1800.2 kkal (Memenuhi Target: 1800-2200)
+  Protein     :   101.3 g    (Memenuhi Target: ≥50)
+  Karbohidrat :   273.8 g    (Memenuhi Target: 250-350)
+  Biaya       : Rp 25,838  (Memenuhi Target: ≤Rp 50,000)
+======================================================================
+
+  VALIDASI CONSTRAINTS
+----------------------------------------------------------------------
+(M) C6: Semua porsi ≥ 50g
+(M) C7: buah = 1 jenis (max = 3)
+(M) C7: karbohidrat = 2 jenis (max = 2)
+(M) C7: protein = 1 jenis (max = 3)
+(M) C7: sayur = 1 jenis (max = 4)
+(M) C7: minuman = 2 jenis (max = 2)
+(M) C8: Staple food = 207.2g (min = 200g)
+(M) C5B: Minuman = 600.0ml (range: 600-900ml)
+======================================================================
+
+
+CATATAN PENGGUNAAN
+----------------------------------------------------------------------
+Menu di atas adalah total untuk 1 HARI (3x makan).
+Suggested distribution:
+  • Sarapan (30%): Karbo + Protein + Buah + Minuman (~200gr)
+  • Makan Siang (40%): Porsi terbesar, semua kategori (~300gr)
+  • Makan Malam (30%): Lebih ringan, Protein + Sayur (~200gr)
+  • Total Minuman: 600ml dari target 600-900 gr atau ml
+======================================================================
+
+ PSO Fitness: 0.035974 | Cost: Rp 25,838
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                            HARI 5: Jumat
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+======================================================================
+                         MENU DETAIL - HARI 5
+======================================================================
+
+BUAH
+----------------------------------------------------------------------
+  • Pisang               :   63.0g  (Rp 504)
+  • Semangka             :   83.5g  (Rp 501)
+  Subtotal               : Rp 1,005
+
+KARBOHIDRAT
+----------------------------------------------------------------------
+  • Nasi Putih           :  226.3g  (Rp 2,942)
+  • Singkong             :  212.4g  (Rp 1,274)
+  Subtotal               : Rp 4,216
+
+PROTEIN
+----------------------------------------------------------------------
+  • Tempe                :   77.5g  (Rp 775)
+  • Kacang Hijau         :  215.1g  (Rp 4,733)
+  Subtotal               : Rp 5,508
+
+SAYUR
+----------------------------------------------------------------------
+  • Wortel               :   72.0g  (Rp 720)
+  • Timun                :  137.6g  (Rp 963)
+  Subtotal               : Rp 1,683
+
+MINUMAN
+----------------------------------------------------------------------
+  • Susu Kedelai         :  262.6g  (Rp 3,151)
+  • Air Putih            :  337.4g  (Rp 1,350)
+  Subtotal               : Rp 4,501
+
+======================================================================
+RINGKASAN NUTRISI
+----------------------------------------------------------------------
+  Kalori      :  1803.2 kkal (Memenuhi Target: 1800-2200)
+  Protein     :    86.9 g    (Memenuhi Target: ≥50)
+  Karbohidrat :   335.5 g    (Memenuhi Target: 250-350)
+  Biaya       : Rp 16,913  (Memenuhi Target: ≤Rp 50,000)
+======================================================================
+
+  VALIDASI CONSTRAINTS
+----------------------------------------------------------------------
+(M) C6: Semua porsi ≥ 50g
+(M) C7: buah = 2 jenis (max = 3)
+(M) C7: karbohidrat = 2 jenis (max = 2)
+(M) C7: protein = 2 jenis (max = 3)
+(M) C7: sayur = 2 jenis (max = 4)
+(M) C7: minuman = 2 jenis (max = 2)
+(M) C8: Staple food = 226.3g (min = 200g)
+(M) C5B: Minuman = 600.0ml (range: 600-900ml)
+======================================================================
+
+
+CATATAN PENGGUNAAN
+----------------------------------------------------------------------
+Menu di atas adalah total untuk 1 HARI (3x makan).
+Suggested distribution:
+  • Sarapan (30%): Karbo + Protein + Buah + Minuman (~200gr)
+  • Makan Siang (40%): Porsi terbesar, semua kategori (~300gr)
+  • Makan Malam (30%): Lebih ringan, Protein + Sayur (~200gr)
+  • Total Minuman: 600ml dari target 600-900 gr atau ml
+======================================================================
+
+ GA Fitness: 0.059088 | Cost: Rp 16,913
+
+======================================================================
+                         MENU DETAIL - HARI 5
+======================================================================
+
+BUAH
+----------------------------------------------------------------------
+  • Pisang               :  152.2g  (Rp 1,218)
+  Subtotal               : Rp 1,218
+
+KARBOHIDRAT
+----------------------------------------------------------------------
+  • Nasi Putih           :  264.8g  (Rp 3,442)
+  • Mie Instant          :  292.9g  (Rp 3,515)
+  Subtotal               : Rp 6,957
+
+PROTEIN
+----------------------------------------------------------------------
+  • Tempe                :  286.3g  (Rp 2,863)
+  Subtotal               : Rp 2,863
+
+SAYUR
+----------------------------------------------------------------------
+  • Timun                :  196.7g  (Rp 1,377)
+  Subtotal               : Rp 1,377
+
+MINUMAN
+----------------------------------------------------------------------
+  • Susu Kedelai         :  500.0g  (Rp 6,000)
+  • Air Putih            :  100.0g  (Rp 400)
+  Subtotal               : Rp 6,400
+
+======================================================================
+RINGKASAN NUTRISI
+----------------------------------------------------------------------
+  Kalori      :  1882.3 kkal (Memenuhi Target: 1800-2200)
+  Protein     :    94.3 g    (Memenuhi Target: ≥50)
+  Karbohidrat :   250.8 g    (Memenuhi Target: 250-350)
+  Biaya       : Rp 18,814  (Memenuhi Target: ≤Rp 50,000)
+======================================================================
+
+  VALIDASI CONSTRAINTS
+----------------------------------------------------------------------
+(M) C6: Semua porsi ≥ 50g
+(M) C7: buah = 1 jenis (max = 3)
+(M) C7: karbohidrat = 2 jenis (max = 2)
+(M) C7: protein = 1 jenis (max = 3)
+(M) C7: sayur = 1 jenis (max = 4)
+(M) C7: minuman = 2 jenis (max = 2)
+(M) C8: Staple food = 264.8g (min = 200g)
+(M) C5B: Minuman = 600.0ml (range: 600-900ml)
+======================================================================
+
+
+CATATAN PENGGUNAAN
+----------------------------------------------------------------------
+Menu di atas adalah total untuk 1 HARI (3x makan).
+Suggested distribution:
+  • Sarapan (30%): Karbo + Protein + Buah + Minuman (~200gr)
+  • Makan Siang (40%): Porsi terbesar, semua kategori (~300gr)
+  • Makan Malam (30%): Lebih ringan, Protein + Sayur (~200gr)
+  • Total Minuman: 600ml dari target 600-900 gr atau ml
+======================================================================
+
+ PSO Fitness: 0.048811 | Cost: Rp 18,814
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                            HARI 6: Sabtu
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+======================================================================
+                         MENU DETAIL - HARI 6
+======================================================================
+
+BUAH
+----------------------------------------------------------------------
+  • Pepaya               :   70.8g  (Rp 566)
+  • Semangka             :   82.1g  (Rp 493)
+  Subtotal               : Rp 1,059
+
+KARBOHIDRAT
+----------------------------------------------------------------------
+  • Roti Tawar           :  227.4g  (Rp 4,093)
+  • Singkong             :  153.7g  (Rp 922)
+  Subtotal               : Rp 5,015
+
+PROTEIN
+----------------------------------------------------------------------
+  • Tempe                :   78.6g  (Rp 786)
+  • Tahu                 :   57.4g  (Rp 459)
+  • Kacang Hijau         :  137.1g  (Rp 3,016)
+  Subtotal               : Rp 4,261
+
+SAYUR
+----------------------------------------------------------------------
+  • Terong               :   67.3g  (Rp 606)
+  • Labu Siam            :  125.7g  (Rp 880)
+  Subtotal               : Rp 1,486
+
+MINUMAN
+----------------------------------------------------------------------
+  • Air Kelapa           :  258.3g  (Rp 1,808)
+  • Kopi Susu            :  350.3g  (Rp 2,802)
+  Subtotal               : Rp 4,610
+
+======================================================================
+RINGKASAN NUTRISI
+----------------------------------------------------------------------
+  Kalori      :  1800.1 kkal (Memenuhi Target: 1800-2200)
+  Protein     :    86.4 g    (Memenuhi Target: ≥50)
+  Karbohidrat :   316.0 g    (Memenuhi Target: 250-350)
+  Biaya       : Rp 16,458  (Memenuhi Target: ≤Rp 50,000)
+======================================================================
+
+  VALIDASI CONSTRAINTS
+----------------------------------------------------------------------
+(TM) C6 VIOLATION: 1 makanan porsi < 50g
+(M) C7: buah = 2 jenis (max = 3)
+(M) C7: karbohidrat = 2 jenis (max = 2)
+(M) C7: protein = 3 jenis (max = 3)
+(M) C7: sayur = 2 jenis (max = 4)
+(M) C7: minuman = 2 jenis (max = 2)
+(M) C8: Staple food = 229.4g (min = 200g)
+(M) C5B: Minuman = 608.6ml (range: 600-900ml)
+======================================================================
+
+
+CATATAN PENGGUNAAN
+----------------------------------------------------------------------
+Menu di atas adalah total untuk 1 HARI (3x makan).
+Suggested distribution:
+  • Sarapan (30%): Karbo + Protein + Buah + Minuman (~200gr)
+  • Makan Siang (40%): Porsi terbesar, semua kategori (~300gr)
+  • Makan Malam (30%): Lebih ringan, Protein + Sayur (~200gr)
+  • Total Minuman: 609ml dari target 600-900 gr atau ml
+======================================================================
+
+ GA Fitness: 0.059783 | Cost: Rp 16,458
+
+======================================================================
+                         MENU DETAIL - HARI 6
+======================================================================
+
+BUAH
+----------------------------------------------------------------------
+  • Jeruk                :  142.8g  (Rp 1,714)
+  Subtotal               : Rp 1,714
+
+KARBOHIDRAT
+----------------------------------------------------------------------
+  • Nasi Putih           :  334.0g  (Rp 4,342)
+  • Singkong             :  156.0g  (Rp 936)
+  Subtotal               : Rp 5,278
+
+PROTEIN
+----------------------------------------------------------------------
+  • Kacang Hijau         :  267.7g  (Rp 5,889)
+  Subtotal               : Rp 5,889
+
+SAYUR
+----------------------------------------------------------------------
+  • Kol                  :  196.4g  (Rp 1,571)
+  Subtotal               : Rp 1,571
+
+MINUMAN
+----------------------------------------------------------------------
+  • Air Putih            :  600.0g  (Rp 2,400)
+  Subtotal               : Rp 2,400
+
+======================================================================
+RINGKASAN NUTRISI
+----------------------------------------------------------------------
+  Kalori      :  1728.9 kkal (Tidak Memenuhi Target: 1800-2200)
+  Protein     :    79.3 g    (Memenuhi Target: ≥50)
+  Karbohidrat :   350.4 g    (Tidak Memenuhi Target: 250-350)
+  Biaya       : Rp 16,852  (Memenuhi Target: ≤Rp 50,000)
+======================================================================
+
+  VALIDASI CONSTRAINTS
+----------------------------------------------------------------------
+(M) C6: Semua porsi ≥ 50g
+(M) C7: buah = 1 jenis (max = 3)
+(M) C7: karbohidrat = 2 jenis (max = 2)
+(M) C7: protein = 1 jenis (max = 3)
+(M) C7: sayur = 1 jenis (max = 4)
+(M) C7: minuman = 1 jenis (max = 2)
+(M) C8: Staple food = 334.0g (min = 200g)
+(M) C5B: Minuman = 600.0ml (range: 600-900ml)
+======================================================================
+
+
+CATATAN PENGGUNAAN
+----------------------------------------------------------------------
+Menu di atas adalah total untuk 1 HARI (3x makan).
+Suggested distribution:
+  • Sarapan (30%): Karbo + Protein + Buah + Minuman (~200gr)
+  • Makan Siang (40%): Porsi terbesar, semua kategori (~300gr)
+  • Makan Malam (30%): Lebih ringan, Protein + Sayur (~200gr)
+  • Total Minuman: 600ml dari target 600-900 gr atau ml
+======================================================================
+
+ PSO Fitness: 0.045544 | Cost: Rp 16,852
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                            HARI 7: Minggu
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+======================================================================
+                         MENU DETAIL - HARI 7
+======================================================================
+
+BUAH
+----------------------------------------------------------------------
+  • Pisang               :  173.2g  (Rp 1,386)
+  • Semangka             :   53.7g  (Rp 322)
+  Subtotal               : Rp 1,708
+
+KARBOHIDRAT
+----------------------------------------------------------------------
+  • Nasi Putih           :  262.9g  (Rp 3,417)
+  • Ubi                  :  170.6g  (Rp 1,535)
+  Subtotal               : Rp 4,953
+
+PROTEIN
+----------------------------------------------------------------------
+  • Ikan Lele            :   56.5g  (Rp 1,696)
+  • Kacang Hijau         :   75.9g  (Rp 1,671)
+  Subtotal               : Rp 3,367
+
+SAYUR
+----------------------------------------------------------------------
+  • Kangkung             :   67.9g  (Rp 407)
+  • Kol                  :  162.3g  (Rp 1,299)
+  Subtotal               : Rp 1,706
+
+MINUMAN
+----------------------------------------------------------------------
+  • Jus Alpukat          :  497.9g  (Rp 7,468)
+  • Air Putih            :  107.2g  (Rp 429)
+  Subtotal               : Rp 7,897
+
+======================================================================
+RINGKASAN NUTRISI
+----------------------------------------------------------------------
+  Kalori      :  1867.3 kkal (Memenuhi Target: 1800-2200)
+  Protein     :    59.1 g    (Memenuhi Target: ≥50)
+  Karbohidrat :   253.4 g    (Memenuhi Target: 250-350)
+  Biaya       : Rp 19,631  (Memenuhi Target: ≤Rp 50,000)
+======================================================================
+
+  VALIDASI CONSTRAINTS
+----------------------------------------------------------------------
+(M) C6: Semua porsi ≥ 50g
+(M) C7: buah = 2 jenis (max = 3)
+(M) C7: karbohidrat = 2 jenis (max = 2)
+(M) C7: protein = 2 jenis (max = 3)
+(M) C7: sayur = 2 jenis (max = 4)
+(M) C7: minuman = 2 jenis (max = 2)
+(M) C8: Staple food = 262.9g (min = 200g)
+(M) C5B: Minuman = 605.1ml (range: 600-900ml)
+======================================================================
+
+
+CATATAN PENGGUNAAN
+----------------------------------------------------------------------
+Menu di atas adalah total untuk 1 HARI (3x makan).
+Suggested distribution:
+  • Sarapan (30%): Karbo + Protein + Buah + Minuman (~200gr)
+  • Makan Siang (40%): Porsi terbesar, semua kategori (~300gr)
+  • Makan Malam (30%): Lebih ringan, Protein + Sayur (~200gr)
+  • Total Minuman: 605ml dari target 600-900 gr atau ml
+======================================================================
+
+ GA Fitness: 0.050309 | Cost: Rp 19,631
+
+======================================================================
+                         MENU DETAIL - HARI 7
+======================================================================
+
+BUAH
+----------------------------------------------------------------------
+  • Pisang               :  396.9g  (Rp 3,175)
+  Subtotal               : Rp 3,175
+
+KARBOHIDRAT
+----------------------------------------------------------------------
+  • Nasi Putih           :  234.9g  (Rp 3,054)
+  • Ubi                  :  267.2g  (Rp 2,405)
+  Subtotal               : Rp 5,459
+
+PROTEIN
+----------------------------------------------------------------------
+  • Tempe                :  314.1g  (Rp 3,141)
+  Subtotal               : Rp 3,141
+
+SAYUR
+----------------------------------------------------------------------
+  • Wortel               :  196.2g  (Rp 1,962)
+  Subtotal               : Rp 1,962
+
+MINUMAN
+----------------------------------------------------------------------
+  • Jus Jeruk            :  500.0g  (Rp 4,000)
+  • Air Putih            :  132.1g  (Rp 528)
+  Subtotal               : Rp 4,528
+
+======================================================================
+RINGKASAN NUTRISI
+----------------------------------------------------------------------
+  Kalori      :  1800.0 kkal (Memenuhi Target: 1800-2200)
+  Protein     :    79.9 g    (Memenuhi Target: ≥50)
+  Karbohidrat :   307.6 g    (Memenuhi Target: 250-350)
+  Biaya       : Rp 18,265  (Memenuhi Target: ≤Rp 50,000)
+======================================================================
+
+  VALIDASI CONSTRAINTS
+----------------------------------------------------------------------
+(M) C6: Semua porsi ≥ 50g
+(M) C7: buah = 1 jenis (max = 3)
+(M) C7: karbohidrat = 2 jenis (max = 2)
+(M) C7: protein = 1 jenis (max = 3)
+(M) C7: sayur = 1 jenis (max = 4)
+(M) C7: minuman = 2 jenis (max = 2)
+(M) C8: Staple food = 234.9g (min = 200g)
+(M) C5B: Minuman = 632.1ml (range: 600-900ml)
+======================================================================
+
+
+CATATAN PENGGUNAAN
+----------------------------------------------------------------------
+Menu di atas adalah total untuk 1 HARI (3x makan).
+Suggested distribution:
+  • Sarapan (30%): Karbo + Protein + Buah + Minuman (~200gr)
+  • Makan Siang (40%): Porsi terbesar, semua kategori (~300gr)
+  • Makan Malam (30%): Lebih ringan, Protein + Sayur (~200gr)
+  • Total Minuman: 632ml dari target 600-900 gr atau ml
+======================================================================
+
+ PSO Fitness: 0.054410 | Cost: Rp 18,265
+
+======================================================================
+                            SUMMARY 7 HARI
+======================================================================
+
+ GA - Total Cost 7 Hari: Rp 123,131
+   Average per hari: Rp 17,590 ± 1,181
+ PSO - Total Cost 7 Hari: Rp 131,093
+   Average per hari: Rp 18,728 ± 3,109
+======================================================================
+
+
+Simpan hasil ke CSV? (y/n): y
+GA results saved to: weekly_menu_GA_20251206_201604.csv
+PSO results saved to: weekly_menu_PSO_20251206_201604.csv
+
+──────────────────────────────────────────────────────────────────────
+                              MENU UTAMA
+──────────────────────────────────────────────────────────────────────
+1. Run Single Day - GA vs PSO
+2. Generate Weekly Menu (7 Days)
+3. Statistical Analysis (30 Runs)
+4. Quick Demo (Best Solution)
+5. Verification Test (Constraint Satisfaction)
+6. Exit
+──────────────────────────────────────────────────────────────────────
+
+Pilih menu (1-6): 3
+
+Statistical Analysis
+Jumlah runs (default=30): 30
+
+======================================================================
+                    STATISTICAL ANALYSIS - 30 RUNS
+======================================================================
+
+Running 30/30...
+Completed 30 runs!
+
+======================================================================
+                        DESCRIPTIVE STATISTICS
+======================================================================
+
+Metric                       Mean          Std          Min          Max
+----------------------------------------------------------------------
+
+ GENETIC ALGORITHM
+Fitness                  0.054657     0.009372     0.009442     0.063362
+Cost (Rp)                  17,769        1,460       15,554       21,281
+Time (s)                     0.17         0.01         0.17         0.20
+
+ PARTICLE SWARM OPTIMIZATION
+Fitness                  0.046749     0.010770     0.024341     0.064474
+Cost (Rp)                  20,557        3,685       15,207       30,120
+Time (s)                     0.14         0.01         0.14         0.17
+
+======================================================================
+                        PAIRED T-TEST RESULTS
+======================================================================
+
+1️  FITNESS COMPARISON
+   T-statistic: 3.6875
+   P-value: 0.000928
+   Result: SIGNIFIKAN (p < 0.05)
+   Winner: GA (Mean: GA=0.054657)
+
+2️  COST COMPARISON
+   T-statistic: -3.5983
+   P-value: 0.001176
+   Result: SIGNIFIKAN (p < 0.05)
+   Winner: GA (Mean: GA=Rp17,769)
+
+3️  COMPUTATIONAL TIME COMPARISON
+   T-statistic: 16.7298
+   P-value: 0.000000
+   Result: SIGNIFIKAN (p < 0.05)
+   Winner: PSO (Mean: PSO=0.14s)
+
+======================================================================
+                       95% CONFIDENCE INTERVALS
+======================================================================
+
+ GENETIC ALGORITHM
+   Fitness : 0.054657 ± 0.003559
+   Cost    : Rp 17,769 ± 554
+   Time    : 0.17s ± 0.00s
+
+ PARTICLE SWARM OPTIMIZATION
+   Fitness : 0.046749 ± 0.004090
+   Cost    : Rp 20,557 ± 1,399
+   Time    : 0.14s ± 0.00s
+D:\TUGAS\SEMESTER 7\CI\repo ci\python\new.py:1416: MatplotlibDeprecationWarning: The 'labels' parameter of boxplot() has been renamed 'tick_labels' since Matplotlib 3.9; support for the old name will be dropped in 3.11.
+  axes[0].boxplot([ga_fitnesses, pso_fitnesses], labels=['GA', 'PSO'])
+D:\TUGAS\SEMESTER 7\CI\repo ci\python\new.py:1427: MatplotlibDeprecationWarning: The 'labels' parameter of boxplot() has been renamed 'tick_labels' since Matplotlib 3.9; support for the old name will be dropped in 3.11.
+  axes[1].boxplot([ga_costs, pso_costs], labels=['GA', 'PSO'])
+D:\TUGAS\SEMESTER 7\CI\repo ci\python\new.py:1438: MatplotlibDeprecationWarning: The 'labels' parameter of boxplot() has been renamed 'tick_labels' since Matplotlib 3.9; support for the old name will be dropped in 3.11.
+  axes[2].boxplot([ga_times, pso_times], labels=['GA', 'PSO'])
+
+Statistical plots saved to: statistical_analysis_20251206_201717.png
+
+======================================================================
+
+
+Simpan hasil statistik ke JSON? (y/n): n
+
+──────────────────────────────────────────────────────────────────────
+                              MENU UTAMA
+──────────────────────────────────────────────────────────────────────
+1. Run Single Day - GA vs PSO
+2. Generate Weekly Menu (7 Days)
+3. Statistical Analysis (30 Runs)
+4. Quick Demo (Best Solution)
+5. Verification Test (Constraint Satisfaction)
+6. Exit
+──────────────────────────────────────────────────────────────────────
+
+Pilih menu (1-6): 4
+
+======================================================================
+                      QUICK DEMO - BEST SOLUTION
+======================================================================
+
+Running optimizations... (this may take a moment)
+
+||WINNER||: GA
+Fitness: 0.058217
+Total Cost: Rp 17,120
+
+======================================================================
+                              MENU DETAIL
+======================================================================
+
+BUAH
+----------------------------------------------------------------------
+  • Pisang               :  141.6g  (Rp 1,133)
+  Subtotal               : Rp 1,133
+
+KARBOHIDRAT
+----------------------------------------------------------------------
+  • Nasi Putih           :  204.1g  (Rp 2,653)
+  • Mie Instant          :  245.1g  (Rp 2,941)
+  Subtotal               : Rp 5,594
+
+PROTEIN
+----------------------------------------------------------------------
+  • Tahu                 :   69.0g  (Rp 552)
+  • Kacang Hijau         :  195.6g  (Rp 4,302)
+  Subtotal               : Rp 4,854
+
+SAYUR
+----------------------------------------------------------------------
+  • Wortel               :  133.6g  (Rp 1,336)
+  • Labu Siam            :   67.9g  (Rp 475)
+  Subtotal               : Rp 1,811
+
+MINUMAN
+----------------------------------------------------------------------
+  • Jus Jeruk            :  331.7g  (Rp 2,654)
+  • Air Putih            :  268.3g  (Rp 1,073)
+  Subtotal               : Rp 3,727
+
+======================================================================
+RINGKASAN NUTRISI
+----------------------------------------------------------------------
+  Kalori      :  1800.1 kkal (Memenuhi Target: 1800-2200)
+  Protein     :    74.6 g    (Memenuhi Target: ≥50)
+  Karbohidrat :   329.7 g    (Memenuhi Target: 250-350)
+  Biaya       : Rp 17,120  (Memenuhi Target: ≤Rp 50,000)
+======================================================================
+
+  VALIDASI CONSTRAINTS
+----------------------------------------------------------------------
+(M) C6: Semua porsi ≥ 50g
+(M) C7: buah = 1 jenis (max = 3)
+(M) C7: karbohidrat = 2 jenis (max = 2)
+(M) C7: protein = 2 jenis (max = 3)
+(M) C7: sayur = 2 jenis (max = 4)
+(M) C7: minuman = 2 jenis (max = 2)
+(M) C8: Staple food = 204.1g (min = 200g)
+(M) C5B: Minuman = 600.0ml (range: 600-900ml)
+======================================================================
+
+
+CATATAN PENGGUNAAN
+----------------------------------------------------------------------
+Menu di atas adalah total untuk 1 HARI (3x makan).
+Suggested distribution:
+  • Sarapan (30%): Karbo + Protein + Buah + Minuman (~200gr)
+  • Makan Siang (40%): Porsi terbesar, semua kategori (~300gr)
+  • Makan Malam (30%): Lebih ringan, Protein + Sayur (~200gr)
+  • Total Minuman: 600ml dari target 600-900 gr atau ml
+======================================================================
+
+
+──────────────────────────────────────────────────────────────────────
+                           QUICK COMPARISON
+──────────────────────────────────────────────────────────────────────
+Algorithm               Fitness            Cost (Rp)        Time (s)
+──────────────────────────────────────────────────────────────────────
+GA                     0.058217               17,120            0.19
+PSO                    0.055176               17,869            0.14
+──────────────────────────────────────────────────────────────────────
+
+
+──────────────────────────────────────────────────────────────────────
+                              MENU UTAMA
+──────────────────────────────────────────────────────────────────────
+1. Run Single Day - GA vs PSO
+2. Generate Weekly Menu (7 Days)
+3. Statistical Analysis (30 Runs)
+4. Quick Demo (Best Solution)
+5. Verification Test (Constraint Satisfaction)
+6. Exit
+──────────────────────────────────────────────────────────────────────
+
+Pilih menu (1-6): 5
+
+======================================================================
+             VERIFICATION TEST - CONSTRAINT SATISFACTION
+======================================================================
+
+Testing Genetic Algorithm...
+GA Results:
+  Fitness: 0.051683
+  Constraints Met: True
+  Violations: 0
+  ✓ ALL CONSTRAINTS SATISFIED!
+
+Testing Particle Swarm Optimization...
+PSO Results:
+  Fitness: 0.044813
+  Constraints Met: True
+  Violations: 0
+  ✓ ALL CONSTRAINTS SATISFIED!
+
+----------------------------------------------------------------------
+Multiple Runs Verification (10 runs each)...
+----------------------------------------------------------------------
+Run 10/10...
+10 Runs Completed!
+
+GA  - Perfect solutions: 7/10 (70%)
+      Average violations: 0.30
+PSO - Perfect solutions: 6/10 (60%)
+      Average violations: 0.40
+
+======================================================================
+⚠ VERIFICATION WARNING - Some violations still exist. Consider strengthening repair.
+======================================================================
+
+
+Simpan hasil verifikasi ke file? (y/n): y
+Hasil verifikasi berhasil disimpan ke: verification_results_20251206_201942.json
+
+──────────────────────────────────────────────────────────────────────
+                              MENU UTAMA
+──────────────────────────────────────────────────────────────────────
+1. Run Single Day - GA vs PSO
+2. Generate Weekly Menu (7 Days)
+3. Statistical Analysis (30 Runs)
+4. Quick Demo (Best Solution)
+5. Verification Test (Constraint Satisfaction)
+6. Exit
+──────────────────────────────────────────────────────────────────────
+
+Pilih menu (1-6): 6
+
+======================================================================
+             Terima kasih telah menggunakan program ini!
+======================================================================
+
+
+======================================================================
+  Program loaded successfully!
+  Read documentation above for usage guide
+  Run main() to start interactive menu
+======================================================================
+
+(.venv) PS D:\TUGAS\SEMESTER 7\CI\repo ci\python> 

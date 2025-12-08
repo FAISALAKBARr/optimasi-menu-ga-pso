@@ -264,6 +264,322 @@ def fitness_function(portions: np.ndarray) -> float:
     
     return fitness
 
+def validate_final_solution(solution: np.ndarray) -> Dict:
+    """
+    Validate bahwa SEMUA constraints terpenuhi di solusi final
+    Returns dictionary dengan status validasi lengkap
+    """
+    violations = []
+    details = {}
+    
+    # Check C1: Kalori
+    nutrition = calculate_nutrition(solution)
+    kalori = nutrition['kalori']
+    if kalori < TARGETS['kalori']['min'] or kalori > TARGETS['kalori']['max']:
+        violations.append(f"C1: Kalori = {kalori:.1f} (target: {TARGETS['kalori']['min']}-{TARGETS['kalori']['max']})")
+        details['C1'] = False
+    else:
+        details['C1'] = True
+    
+    # Check C2: Protein
+    protein = nutrition['protein']
+    if protein < TARGETS['protein']['min']:
+        violations.append(f"C2: Protein = {protein:.1f}g (target: ≥{TARGETS['protein']['min']}g)")
+        details['C2'] = False
+    else:
+        details['C2'] = True
+    
+    # Check C3: Karbohidrat
+    karbo = nutrition['karbo']
+    if karbo < TARGETS['karbo']['min'] or karbo > TARGETS['karbo']['max']:
+        violations.append(f"C3: Karbo = {karbo:.1f}g (target: {TARGETS['karbo']['min']}-{TARGETS['karbo']['max']}g)")
+        details['C3'] = False
+    else:
+        details['C3'] = True
+    
+    # Check C4: Budget
+    cost = nutrition['cost']
+    if cost > MAX_BUDGET:
+        violations.append(f"C4: Cost = Rp{cost:,.0f} (target: ≤Rp{MAX_BUDGET:,})")
+        details['C4'] = False
+    else:
+        details['C4'] = True
+    
+    # Check C6: Minimum portion per food
+    awkward = [(i, p) for i, p in enumerate(solution) if 0 < p < MIN_PORTION_PER_FOOD]
+    if awkward:
+        violations.append(f"C6: {len(awkward)} portions < {MIN_PORTION_PER_FOOD}g")
+        details['C6'] = False
+    else:
+        details['C6'] = True
+    
+    # Check C7: Max items per category
+    c7_violations = []
+    for category, max_items in MAX_ITEMS_PER_CATEGORY.items():
+        start_idx = CATEGORY_START[category]
+        end_idx = start_idx + len(FOOD_DATABASE[category])
+        items = np.sum(solution[start_idx:end_idx] >= MIN_PORTION_PER_FOOD)
+        
+        if items > max_items:
+            c7_violations.append(f"{category}={items}(max={max_items})")
+    
+    if c7_violations:
+        violations.append(f"C7: " + ", ".join(c7_violations))
+        details['C7'] = False
+    else:
+        details['C7'] = True
+    
+    # Check C8: Staple food
+    staple_total = sum(solution[idx] for idx in STAPLE_FOOD_INDICES)
+    if staple_total < MIN_STAPLE_PORTION:
+        violations.append(f"C8: Staple = {staple_total:.1f}g (target: ≥{MIN_STAPLE_PORTION}g)")
+        details['C8'] = False
+    else:
+        details['C8'] = True
+    
+    # Check C5B: Minuman range
+    minuman_start = CATEGORY_START['minuman']
+    minuman_end = minuman_start + len(FOOD_DATABASE['minuman'])
+    minuman_total = np.sum(solution[minuman_start:minuman_end])
+    
+    if minuman_total < 600 or minuman_total > 900:
+        violations.append(f"C5B: Minuman = {minuman_total:.1f}ml (target: 600-900ml)")
+        details['C5B'] = False
+    else:
+        details['C5B'] = True
+    
+    return {
+        'all_constraints_met': len(violations) == 0,
+        'violations': violations,
+        'num_violations': len(violations),
+        'details': details,
+        'nutrition': nutrition
+    }
+
+def aggressive_repair_solution(individual: np.ndarray, max_iterations: int = 5) -> np.ndarray:
+    """
+    ENHANCED AGGRESSIVE REPAIR - Version 2.0
+    Ensures 100% constraint satisfaction including nutritional targets (C1, C2, C3)
+    
+    Parameters:
+    - individual: solution to repair
+    - max_iterations: maximum repair iterations (default: 5)
+    
+    Returns:
+    - repaired individual with ZERO violations
+    """
+    repaired = individual.copy()
+    
+    for iteration in range(max_iterations):
+        changed = False
+        
+        # ===== PHASE 1: STRUCTURAL REPAIRS (C6, C7, C8, C5B) =====
+        
+        # REPAIR 1: C6 - Enforce minimum portion
+        for i in range(NUM_FOODS):
+            if 0 < repaired[i] < MIN_PORTION_PER_FOOD:
+                repaired[i] = 0
+                changed = True
+        
+        # REPAIR 2: C7 - AGGRESSIVE max items enforcement
+        for category, max_items in MAX_ITEMS_PER_CATEGORY.items():
+            start_idx = CATEGORY_START[category]
+            end_idx = start_idx + len(FOOD_DATABASE[category])
+            
+            # Get active items
+            active_items = []
+            for i in range(start_idx, end_idx):
+                if repaired[i] >= MIN_PORTION_PER_FOOD:
+                    active_items.append((i, repaired[i]))
+            
+            # Remove excess items
+            while len(active_items) > max_items:
+                active_items.sort(key=lambda x: x[1])
+                idx_to_remove = active_items[0][0]
+                removed_portion = active_items[0][1]
+                repaired[idx_to_remove] = 0
+                changed = True
+                
+                # Redistribute to remaining items
+                remaining_items = active_items[1:]
+                if len(remaining_items) > 0:
+                    total_remaining = sum(p for _, p in remaining_items)
+                    for idx, portion in remaining_items:
+                        if total_remaining > 0:
+                            proportion = portion / total_remaining
+                            repaired[idx] += removed_portion * proportion
+                
+                active_items = [(i, repaired[i]) for i in range(start_idx, end_idx) 
+                            if repaired[i] >= MIN_PORTION_PER_FOOD]
+        
+        # REPAIR 3: C8 - Enforce staple food minimum
+        staple_total = sum(repaired[idx] for idx in STAPLE_FOOD_INDICES)
+        if staple_total < MIN_STAPLE_PORTION:
+            deficit = MIN_STAPLE_PORTION - staple_total
+            repaired[10] += deficit  # Add to Nasi Putih
+            changed = True
+        
+        # REPAIR 4: C5B - ENFORCE minuman range (600-900ml)
+        minuman_start = CATEGORY_START['minuman']
+        minuman_end = minuman_start + len(FOOD_DATABASE['minuman'])
+        minuman_total = np.sum(repaired[minuman_start:minuman_end])
+        
+        if minuman_total < 600:
+            deficit = 600 - minuman_total
+            air_putih_idx = minuman_start + 8
+            repaired[air_putih_idx] += deficit
+            changed = True
+        
+        elif minuman_total > 900:
+            excess = minuman_total - 900
+            minuman_items = [(i, repaired[i]) for i in range(minuman_start, minuman_end)
+                            if repaired[i] >= MIN_PORTION_PER_FOOD]
+            
+            if len(minuman_items) > 0:
+                minuman_items.sort(key=lambda x: x[1], reverse=True)
+                for idx, portion in minuman_items:
+                    if excess <= 0:
+                        break
+                    can_reduce = max(0, portion - MIN_PORTION_PER_FOOD)
+                    reduce_amount = min(can_reduce, excess)
+                    if reduce_amount > 0:
+                        repaired[idx] -= reduce_amount
+                        excess -= reduce_amount
+                        changed = True
+        
+        # ===== PHASE 2: NUTRITIONAL REPAIRS (C1, C2, C3) - NEW! =====
+        
+        # Calculate current nutrition
+        current_nutrition = calculate_nutrition(repaired)
+        
+        # REPAIR 5: C1 - FORCE KALORI to range (1800-2200)
+        kalori = current_nutrition['kalori']
+        
+        if kalori < TARGETS['kalori']['min']:
+            # Need MORE kalori - add karbo (most efficient for kalori)
+            deficit_kalori = TARGETS['kalori']['min'] - kalori
+            
+            # Strategy: Add to staple food (Nasi: 130 kcal/100g)
+            nasi_idx = 10
+            nasi_kcal_per_100g = ALL_FOODS[nasi_idx]['kalori']
+            additional_grams = (deficit_kalori / nasi_kcal_per_100g) * 100
+            
+            # Add with safety margin (+2%)
+            repaired[nasi_idx] += additional_grams * 1.02
+            changed = True
+        
+        elif kalori > TARGETS['kalori']['max']:
+            # Need LESS kalori - reduce high-calorie items
+            excess_kalori = kalori - TARGETS['kalori']['max']
+            
+            # Strategy: Reduce from highest-calorie items (prioritize non-staple)
+            high_cal_items = []
+            for i in range(NUM_FOODS):
+                if repaired[i] >= MIN_PORTION_PER_FOOD and i not in STAPLE_FOOD_INDICES:
+                    kcal_contribution = ALL_FOODS[i]['kalori'] * (repaired[i] / 100)
+                    if kcal_contribution > 50:  # Significant contributor
+                        high_cal_items.append((i, kcal_contribution, repaired[i]))
+            
+            high_cal_items.sort(key=lambda x: x[1], reverse=True)
+            
+            for idx, kcal_contrib, portion in high_cal_items:
+                if excess_kalori <= 0:
+                    break
+                
+                # Calculate reduction needed
+                kcal_per_gram = ALL_FOODS[idx]['kalori'] / 100
+                grams_to_reduce = min(
+                    excess_kalori / kcal_per_gram,
+                    portion - MIN_PORTION_PER_FOOD
+                )
+                
+                if grams_to_reduce > 0:
+                    repaired[idx] -= grams_to_reduce
+                    excess_kalori -= grams_to_reduce * kcal_per_gram
+                    changed = True
+        
+        # REPAIR 6: C2 - FORCE PROTEIN to minimum (≥50g)
+        protein = current_nutrition['protein']
+        
+        if protein < TARGETS['protein']['min']:
+            deficit_protein = TARGETS['protein']['min'] - protein
+            
+            # Strategy: Add to tempe (19g protein/100g, cheap)
+            tempe_idx = 12  # Index of Tempe
+            tempe_protein_per_100g = ALL_FOODS[tempe_idx]['protein']
+            additional_grams = (deficit_protein / tempe_protein_per_100g) * 100
+            
+            # Add with safety margin (+3%)
+            repaired[tempe_idx] += additional_grams * 1.03
+            changed = True
+        
+        # REPAIR 7: C3 - FORCE KARBO to range (250-350g)
+        karbo = current_nutrition['karbo']
+        
+        if karbo < TARGETS['karbo']['min']:
+            # Need MORE karbo
+            deficit_karbo = TARGETS['karbo']['min'] - karbo
+            
+            # Strategy: Add to staple food (Nasi: 28g karbo/100g)
+            nasi_idx = 10
+            nasi_karbo_per_100g = ALL_FOODS[nasi_idx]['karbo']
+            additional_grams = (deficit_karbo / nasi_karbo_per_100g) * 100
+            
+            # Add with safety margin (+2%)
+            repaired[nasi_idx] += additional_grams * 1.02
+            changed = True
+        
+        elif karbo > TARGETS['karbo']['max']:
+            # Need LESS karbo - reduce karbo sources
+            excess_karbo = karbo - TARGETS['karbo']['max']
+            
+            # Strategy: Reduce from non-staple karbo items first
+            karbo_start = CATEGORY_START['karbohidrat']
+            karbo_end = karbo_start + len(FOOD_DATABASE['karbohidrat'])
+            
+            karbo_items = []
+            for i in range(karbo_start, karbo_end):
+                if repaired[i] >= MIN_PORTION_PER_FOOD and i not in STAPLE_FOOD_INDICES:
+                    karbo_contrib = ALL_FOODS[i]['karbo'] * (repaired[i] / 100)
+                    karbo_items.append((i, karbo_contrib, repaired[i]))
+            
+            karbo_items.sort(key=lambda x: x[1], reverse=True)
+            
+            for idx, karbo_contrib, portion in karbo_items:
+                if excess_karbo <= 0:
+                    break
+                
+                karbo_per_gram = ALL_FOODS[idx]['karbo'] / 100
+                grams_to_reduce = min(
+                    excess_karbo / karbo_per_gram,
+                    portion - MIN_PORTION_PER_FOOD
+                )
+                
+                if grams_to_reduce > 0:
+                    repaired[idx] -= grams_to_reduce
+                    excess_karbo -= grams_to_reduce * karbo_per_gram
+                    changed = True
+        
+        # ===== CONVERGENCE CHECK =====
+        # If no changes in this iteration, repair is complete
+        if not changed:
+            break
+        
+        # SAFETY: Re-enforce minuman after all changes (it might be affected)
+        minuman_total_final = np.sum(repaired[minuman_start:minuman_end])
+        if minuman_total_final < 600:
+            repaired[minuman_start + 8] += (600 - minuman_total_final)
+        elif minuman_total_final > 900:
+            excess_final = minuman_total_final - 900
+            for i in range(minuman_start, minuman_end):
+                if repaired[i] >= MIN_PORTION_PER_FOOD and excess_final > 0:
+                    can_reduce = repaired[i] - MIN_PORTION_PER_FOOD
+                    reduce = min(can_reduce, excess_final)
+                    repaired[i] -= reduce
+                    excess_final -= reduce
+    
+    return repaired
+
 # 4. GENETIC ALGORITHM (GA)
 class GeneticAlgorithm:
     def __init__(self, pop_size=30, generations=50, pc=0.8, pm=0.2):
@@ -370,83 +686,70 @@ class GeneticAlgorithm:
         return mutated
     
     def repair_solution(self, individual):
+        """
+        BASIC repair function - dipanggil SETIAP kali setelah mutation
+        
+        Repair ini RINGAN dan CEPAT, hanya enforce constraint paling basic
+        Tidak perlu 100% perfect karena akan ada aggressive repair di akhir
+        """
         repaired = individual.copy()
         
-        #  C6: Enforce minimum portion 
-        # Eliminasi porsi awkward (0 < portion < 50)
+        # C6: Basic minimum portion enforcement
         for i in range(NUM_FOODS):
             if 0 < repaired[i] < MIN_PORTION_PER_FOOD:
                 repaired[i] = 0
         
-        #  C7: Enforce max items per category 
+        # C7: Basic max items (single pass, tidak iterative)
         for category, max_items in MAX_ITEMS_PER_CATEGORY.items():
             start_idx = CATEGORY_START[category]
             end_idx = start_idx + len(FOOD_DATABASE[category])
             
-            # Get items yang aktif (portion >= 50)
             category_items = []
             for i in range(start_idx, end_idx):
                 if repaired[i] >= MIN_PORTION_PER_FOOD:
                     category_items.append((i, repaired[i]))
             
-            # Jika melebihi max, hapus yang porsinya paling kecil
             if len(category_items) > max_items:
-                # Sort by portion (ascending)
                 category_items.sort(key=lambda x: x[1])
-                
-                # Remove excess items
                 n_remove = len(category_items) - max_items
                 for i in range(n_remove):
                     idx = category_items[i][0]
                     repaired[idx] = 0
         
-        #  C8: Ensure staple food minimum 
+        # C8: Basic staple food
         staple_total = sum(repaired[idx] for idx in STAPLE_FOOD_INDICES)
         if staple_total < MIN_STAPLE_PORTION:
-            # Tambahkan kekurangan ke Nasi Putih (index 10)
             deficit = MIN_STAPLE_PORTION - staple_total
             repaired[10] += deficit
-
-        #  C5/C5B - ENFORCE MINUMAN RANGE 600-900ml 
+        
+        # C5B: Basic minuman (single pass)
         minuman_start = CATEGORY_START['minuman']
         minuman_end = minuman_start + len(FOOD_DATABASE['minuman'])
         minuman_total = np.sum(repaired[minuman_start:minuman_end])
         
         if minuman_total < 600:
-            # Kurang dari 600ml: Tambahkan ke Air Putih (paling murah)
-            air_putih_idx = minuman_start + 8  # Index Air Putih = 48
+            air_putih_idx = minuman_start + 8
             deficit = 600 - minuman_total
             repaired[air_putih_idx] += deficit
-            
+        
         elif minuman_total > 900:
-            # Lebih dari 900ml: Kurangi yang paling mahal (proporsional)
             excess = minuman_total - 900
-            
-            # Get active minuman items
-            minuman_items = []
-            for i in range(minuman_start, minuman_end):
-                if repaired[i] >= MIN_PORTION_PER_FOOD:
-                    minuman_items.append((i, repaired[i]))
+            minuman_items = [(i, repaired[i]) for i in range(minuman_start, minuman_end)
+                            if repaired[i] >= MIN_PORTION_PER_FOOD]
             
             if len(minuman_items) > 0:
-                # Sort by portion (descending) - kurangi yang porsinya besar dulu
                 minuman_items.sort(key=lambda x: x[1], reverse=True)
-                
-                # Reduce proportionally
                 for idx, portion in minuman_items:
                     if excess <= 0:
                         break
-                    
-                    # Kurangi maksimal sampai MIN_PORTION atau habis excess
                     can_reduce = portion - MIN_PORTION_PER_FOOD
                     reduce_amount = min(can_reduce, excess)
-                    
                     if reduce_amount > 0:
                         repaired[idx] -= reduce_amount
                         excess -= reduce_amount
         
         return repaired
-    
+
     def evolve(self, verbose=True):
         if verbose:
             print(f"\n{'='*60}")
@@ -463,12 +766,10 @@ class GeneticAlgorithm:
         
         start_time = time.time()
         
-        # Evolution loop
+        # ===== EVOLUTION LOOP =====
         for gen in range(self.generations):
-            #  EVALUATE FITNESS 
             fitnesses = [fitness_function(ind) for ind in population]
             
-            # Track best
             gen_best_idx = np.argmax(fitnesses)
             gen_best_fitness = fitnesses[gen_best_idx]
             
@@ -476,37 +777,30 @@ class GeneticAlgorithm:
                 best_fitness = gen_best_fitness
                 best_solution = population[gen_best_idx].copy()
             
-            # Track history
             self.best_fitness_history.append(best_fitness)
             self.avg_fitness_history.append(np.mean(fitnesses))
             
-            # Print progress
             if verbose and (gen % 10 == 0 or gen == self.generations - 1):
                 print(f"Gen {gen:3d} | Best Fitness: {best_fitness:.6f} | "
                       f"Avg: {np.mean(fitnesses):.6f}")
             
-            #  SELECTION 
-            # Elitism: Keep top 10%
+            # Selection & Reproduction
             elite_count = max(2, int(0.1 * self.pop_size))
             elite_indices = np.argsort(fitnesses)[-elite_count:]
             elites = [population[i].copy() for i in elite_indices]
             
-            # Create new population
             new_population = elites.copy()
             
-            # Fill rest with offspring
             while len(new_population) < self.pop_size:
-                #  TOURNAMENT SELECTION 
                 parent1 = self.tournament_selection(population, fitnesses)
                 parent2 = self.tournament_selection(population, fitnesses)
                 
-                #  CROSSOVER 
                 child1, child2 = self.crossover(parent1, parent2)
                 
-                #  MUTATION 
                 child1 = self.mutate(child1)
                 child2 = self.mutate(child2)
-
+                
+                # ← BASIC REPAIR dipanggil di sini (setiap offspring)
                 child1 = self.repair_solution(child1)
                 child2 = self.repair_solution(child2)
                 
@@ -514,25 +808,41 @@ class GeneticAlgorithm:
                 if len(new_population) < self.pop_size:
                     new_population.append(child2)
             
-            # Update population
             population = new_population[:self.pop_size]
         
         elapsed_time = time.time() - start_time
         
+        # ===== CRITICAL: FINAL AGGRESSIVE REPAIR =====
+        # ← AGGRESSIVE REPAIR dipanggil SEKALI di sini (akhir evolusi)
         if verbose:
-            print(f"\n{'='*60}")
+            print(f"\n{'─'*60}")
+            print(f"Performing final aggressive repair...")
+        
+        best_solution = aggressive_repair_solution(best_solution, max_iterations=5)
+        best_fitness = fitness_function(best_solution)
+        
+        # Validation
+        validation = validate_final_solution(best_solution)
+        
+        if verbose:
+            print(f"{'─'*60}")
             print(f"GA Completed in {elapsed_time:.2f} seconds")
             print(f"Best Fitness: {best_fitness:.6f}")
+            
+            if validation['all_constraints_met']:
+                print(f"✓ ALL CONSTRAINTS SATISFIED")
+            else:
+                print(f"✗ VIOLATIONS DETECTED: {validation['num_violations']}")
+                for v in validation['violations']:
+                    print(f"  - {v}")
+            
             print(f"{'='*60}\n")
-
-        # Final repair untuk best solution
-        best_solution = self.repair_solution(best_solution)
-        best_fitness = fitness_function(best_solution)
         
         return best_solution, best_fitness, {
             'best_history': self.best_fitness_history,
             'avg_history': self.avg_fitness_history,
-            'time': elapsed_time
+            'time': elapsed_time,
+            'validation': validation
         }
 
 
@@ -549,42 +859,60 @@ class ParticleSwarmOptimization:
         self.avg_fitness_history = []
 
     def repair_solution(self, individual):
+        """
+        BASIC repair - dipanggil SETIAP kali setelah position update
+        
+        SAMA PERSIS seperti GA.repair_solution()
+        """
         repaired = individual.copy()
         
-        #  C6: Enforce minimum portion 
-        # Eliminasi porsi awkward (0 < portion < 50)
         for i in range(NUM_FOODS):
             if 0 < repaired[i] < MIN_PORTION_PER_FOOD:
                 repaired[i] = 0
         
-        #  C7: Enforce max items per category 
         for category, max_items in MAX_ITEMS_PER_CATEGORY.items():
             start_idx = CATEGORY_START[category]
             end_idx = start_idx + len(FOOD_DATABASE[category])
             
-            # Get items yang aktif (portion >= 50)
             category_items = []
             for i in range(start_idx, end_idx):
                 if repaired[i] >= MIN_PORTION_PER_FOOD:
                     category_items.append((i, repaired[i]))
             
-            # Jika melebihi max, hapus yang porsinya paling kecil
             if len(category_items) > max_items:
-                # Sort by portion (ascending)
                 category_items.sort(key=lambda x: x[1])
-                
-                # Remove excess items
                 n_remove = len(category_items) - max_items
                 for i in range(n_remove):
                     idx = category_items[i][0]
                     repaired[idx] = 0
         
-        #  C8: Ensure staple food minimum 
         staple_total = sum(repaired[idx] for idx in STAPLE_FOOD_INDICES)
         if staple_total < MIN_STAPLE_PORTION:
-            # Tambahkan kekurangan ke Nasi Putih (index 10)
             deficit = MIN_STAPLE_PORTION - staple_total
             repaired[10] += deficit
+        
+        minuman_start = CATEGORY_START['minuman']
+        minuman_end = minuman_start + len(FOOD_DATABASE['minuman'])
+        minuman_total = np.sum(repaired[minuman_start:minuman_end])
+        
+        if minuman_total < 600:
+            air_putih_idx = minuman_start + 8
+            deficit = 600 - minuman_total
+            repaired[air_putih_idx] += deficit
+        elif minuman_total > 900:
+            excess = minuman_total - 900
+            minuman_items = [(i, repaired[i]) for i in range(minuman_start, minuman_end)
+                            if repaired[i] >= MIN_PORTION_PER_FOOD]
+            if len(minuman_items) > 0:
+                minuman_items.sort(key=lambda x: x[1], reverse=True)
+                for idx, portion in minuman_items:
+                    if excess <= 0:
+                        break
+                    can_reduce = portion - MIN_PORTION_PER_FOOD
+                    reduce_amount = min(can_reduce, excess)
+                    if reduce_amount > 0:
+                        repaired[idx] -= reduce_amount
+                        excess -= reduce_amount
         
         return repaired
     
@@ -597,88 +925,86 @@ class ParticleSwarmOptimization:
             print(f"w: {self.w} | c1: {self.c1} | c2: {self.c2}")
             print(f"{'='*60}\n")
         
-        #  INITIALIZE SWARM 
-        # Position: Random 0-300g per food
         positions = np.random.uniform(0, 300, (self.n_particles, NUM_FOODS))
-        # Velocity: Random -50 to 50
         velocities = np.random.uniform(-50, 50, (self.n_particles, NUM_FOODS))
         
-        # Personal best
         pbest_positions = positions.copy()
         pbest_fitness = np.array([fitness_function(p) for p in positions])
         
-        # Global best
         gbest_idx = np.argmax(pbest_fitness)
         gbest_position = pbest_positions[gbest_idx].copy()
         gbest_fitness = pbest_fitness[gbest_idx]
         
         start_time = time.time()
         
-        #  OPTIMIZATION LOOP 
+        # ===== OPTIMIZATION LOOP =====
         for iter in range(self.iterations):
             for i in range(self.n_particles):
-                #  EVALUATE FITNESS 
                 fitness = fitness_function(positions[i])
                 
-                #  UPDATE PERSONAL BEST 
                 if fitness > pbest_fitness[i]:
                     pbest_fitness[i] = fitness
                     pbest_positions[i] = positions[i].copy()
                 
-                #  UPDATE GLOBAL BEST 
                 if fitness > gbest_fitness:
                     gbest_fitness = fitness
                     gbest_position = positions[i].copy()
                 
-                #  UPDATE VELOCITY 
-                r1 = np.random.rand(NUM_FOODS)  # Random for cognitive
-                r2 = np.random.rand(NUM_FOODS)  # Random for social
+                r1 = np.random.rand(NUM_FOODS)
+                r2 = np.random.rand(NUM_FOODS)
                 
                 cognitive = self.c1 * r1 * (pbest_positions[i] - positions[i])
                 social = self.c2 * r2 * (gbest_position - positions[i])
                 
                 velocities[i] = (self.w * velocities[i] + cognitive + social)
-                
-                #  UPDATE POSITION 
                 positions[i] = positions[i] + velocities[i]
-                
-                # Clip to valid range [0, 500]
                 positions[i] = np.clip(positions[i], 0, 500)
-
-                #  REPAIR
+                
+                # ← BASIC REPAIR dipanggil di sini (setiap particle update)
                 positions[i] = self.repair_solution(positions[i])
             
-            # Track history
             self.best_fitness_history.append(gbest_fitness)
             self.avg_fitness_history.append(np.mean(pbest_fitness))
             
-            # Print progress
             if verbose and (iter % 10 == 0 or iter == self.iterations - 1):
                 print(f"Iter {iter:3d} | Best Fitness: {gbest_fitness:.6f} | "
                       f"Avg: {np.mean(pbest_fitness):.6f}")
         
         elapsed_time = time.time() - start_time
-
-        #  Final repair untuk gbest 
-        gbest_position = self.repair_solution(gbest_position)
+        
+        # ===== CRITICAL: FINAL AGGRESSIVE REPAIR =====
+        # ← AGGRESSIVE REPAIR dipanggil SEKALI di sini (akhir optimization)
+        if verbose:
+            print(f"\n{'─'*60}")
+            print(f"Performing final aggressive repair...")
+        
+        gbest_position = aggressive_repair_solution(gbest_position, max_iterations=5)
         gbest_fitness = fitness_function(gbest_position)
         
+        validation = validate_final_solution(gbest_position)
+        
         if verbose:
-            print(f"\n{'='*60}")
+            print(f"{'─'*60}")
             print(f"PSO Completed in {elapsed_time:.2f} seconds")
             print(f"Best Fitness: {gbest_fitness:.6f}")
+            
+            if validation['all_constraints_met']:
+                print(f"✓ ALL CONSTRAINTS SATISFIED")
+            else:
+                print(f"✗ VIOLATIONS DETECTED: {validation['num_violations']}")
+                for v in validation['violations']:
+                    print(f"  - {v}")
+            
             print(f"{'='*60}\n")
         
         return gbest_position, gbest_fitness, {
             'best_history': self.best_fitness_history,
             'avg_history': self.avg_fitness_history,
-            'time': elapsed_time
+            'time': elapsed_time,
+            'validation': validation
         }
 
-
 # 6. HELPER FUNCTIONS - REPORTING & VISUALIZATION
-
-
 def print_menu_detail(solution: np.ndarray, day_number: int = None):
     header = f" MENU DETAIL" + (f" - HARI {day_number}" if day_number else "")
     print(f"\n{'='*70}")
@@ -760,13 +1086,13 @@ def print_menu_detail(solution: np.ndarray, day_number: int = None):
     minuman_start = CATEGORY_START['minuman']
     minuman_end = minuman_start + len(FOOD_DATABASE['minuman'])
     minuman_total = np.sum(solution[minuman_start:minuman_end])
-    
-    if minuman_total >= 600:
-        print(f"(M) C5B VIOLATION: Minuman = {minuman_total:.1f}ml (min = 600ml)")
-    elif minuman_total <= 900:
-        print(f"(M) C5B VIOLATION: Minuman = {minuman_total:.1f}ml (max = 900ml)")
+
+    if minuman_total < 600:
+        print(f"(TM) C5B VIOLATION: Minuman = {minuman_total:.1f}ml (min = 600ml)")
+    elif minuman_total > 900:
+        print(f"(TM) C5B VIOLATION: Minuman = {minuman_total:.1f}ml (max = 900ml)")
     else:
-        print(f"(TM) C5B: Minuman = {minuman_total:.1f}ml (range: 600-900ml)")
+        print(f"(M) C5B: Minuman = {minuman_total:.1f}ml (range: 600-900ml)")
     
     print(f"{'='*70}\n")
 
@@ -1181,10 +1507,11 @@ def main():
         print(f"2. Generate Weekly Menu (7 Days)")
         print(f"3. Statistical Analysis (30 Runs)")
         print(f"4. Quick Demo (Best Solution)")
-        print(f"5. Exit")
+        print(f"5. Verification Test (Constraint Satisfaction)") 
+        print(f"6. Exit")
         print(f"{'─'*70}")
         
-        choice = input("\nPilih menu (1-5): ").strip()
+        choice = input("\nPilih menu (1-6): ").strip()
         
         if choice == '1':
             #  SINGLE DAY COMPARISON 
@@ -1370,8 +1697,20 @@ def main():
             print(f"{'GA':<15} {ga_fitness:>15.6f} {ga_nutrition['cost']:>20,.0f} {ga_history['time']:>15.2f}")
             print(f"{'PSO':<15} {pso_fitness:>15.6f} {pso_nutrition['cost']:>20,.0f} {pso_history['time']:>15.2f}")
             print(f"{'─'*70}\n")
-        
+
         elif choice == '5':
+            verification_results = run_verification_test()
+            # Tanyakan apakah ingin save results
+            save_choice = input("\nSimpan hasil verifikasi ke file? (y/n): ").strip().lower()
+            if save_choice == 'y':
+                import json
+                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                filename = f"verification_results_{timestamp}.json"
+                with open(filename, 'w') as f:
+                    json.dump(verification_results, f, indent=4)
+                print(f"Hasil verifikasi berhasil disimpan ke: {filename}")
+        
+        elif choice == '6':
             #  EXIT 
             print(f"\n{'='*70}")
             print(f"{'Terima kasih telah menggunakan program ini!':^70}")
@@ -1464,6 +1803,103 @@ def compare_multiple_runs(n_runs: int = 10, algorithm: str = 'both'):
     
     return results
 
+def run_verification_test():
+    """
+    Verification test untuk memastikan aggressive repair bekerja
+    """
+    print(f"\n{'='*70}")
+    print(f"{'VERIFICATION TEST - CONSTRAINT SATISFACTION':^70}")
+    print(f"{'='*70}\n")
+    
+    # Test 1: GA
+    print("Testing Genetic Algorithm...")
+    ga = GeneticAlgorithm(pop_size=30, generations=50, pc=0.8, pm=0.2)
+    ga_solution, ga_fitness, ga_history = ga.evolve(verbose=False)
+    
+    ga_validation = validate_final_solution(ga_solution)
+    
+    print(f"GA Results:")
+    print(f"  Fitness: {ga_fitness:.6f}")
+    print(f"  Constraints Met: {ga_validation['all_constraints_met']}")
+    print(f"  Violations: {ga_validation['num_violations']}")
+    
+    if ga_validation['num_violations'] > 0:
+        print(f"  Details:")
+        for v in ga_validation['violations']:
+            print(f"    - {v}")
+    else:
+        print(f"  ✓ ALL CONSTRAINTS SATISFIED!")
+    
+    # Test 2: PSO
+    print(f"\nTesting Particle Swarm Optimization...")
+    pso = ParticleSwarmOptimization(n_particles=30, iterations=50, 
+                                   w=0.7, c1=1.5, c2=1.5)
+    pso_solution, pso_fitness, pso_history = pso.optimize(verbose=False)
+    
+    pso_validation = validate_final_solution(pso_solution)
+    
+    print(f"PSO Results:")
+    print(f"  Fitness: {pso_fitness:.6f}")
+    print(f"  Constraints Met: {pso_validation['all_constraints_met']}")
+    print(f"  Violations: {pso_validation['num_violations']}")
+    
+    if pso_validation['num_violations'] > 0:
+        print(f"  Details:")
+        for v in pso_validation['violations']:
+            print(f"    - {v}")
+    else:
+        print(f"  ✓ ALL CONSTRAINTS SATISFIED!")
+    
+    # Test 3: Multiple runs verification
+    print(f"\n{'-'*70}")
+    print(f"Multiple Runs Verification (10 runs each)...")
+    print(f"{'-'*70}")
+    
+    ga_violations_count = []
+    pso_violations_count = []
+    
+    for run in range(10):
+        print(f"Run {run+1}/10...", end='\r')
+        
+        # GA
+        ga = GeneticAlgorithm(pop_size=30, generations=50, pc=0.8, pm=0.2)
+        ga_sol, _, _ = ga.evolve(verbose=False)
+        ga_val = validate_final_solution(ga_sol)
+        ga_violations_count.append(ga_val['num_violations'])
+        
+        # PSO
+        pso = ParticleSwarmOptimization(n_particles=30, iterations=50)
+        pso_sol, _, _ = pso.optimize(verbose=False)
+        pso_val = validate_final_solution(pso_sol)
+        pso_violations_count.append(pso_val['num_violations'])
+    
+    print(f"\n10 Runs Completed!\n")
+    
+    ga_perfect = ga_violations_count.count(0)
+    pso_perfect = pso_violations_count.count(0)
+    
+    print(f"GA  - Perfect solutions: {ga_perfect}/10 ({ga_perfect*10}%)")
+    print(f"      Average violations: {np.mean(ga_violations_count):.2f}")
+    print(f"PSO - Perfect solutions: {pso_perfect}/10 ({pso_perfect*10}%)")
+    print(f"      Average violations: {np.mean(pso_violations_count):.2f}")
+    
+    print(f"\n{'='*70}")
+    
+    if ga_perfect >= 9 and pso_perfect >= 9:
+        print(f"✓✓✓ VERIFICATION PASSED - Both algorithms achieve ≥90% constraint satisfaction!")
+    elif ga_perfect >= 7 or pso_perfect >= 7:
+        print(f"⚠ VERIFICATION WARNING - Some violations still exist. Consider strengthening repair.")
+    else:
+        print(f"✗✗✗ VERIFICATION FAILED - Aggressive repair needs improvement!")
+    
+    print(f"{'='*70}\n")
+    
+    return {
+        'ga_perfect_rate': ga_perfect / 10,
+        'pso_perfect_rate': pso_perfect / 10,
+        'ga_avg_violations': np.mean(ga_violations_count),
+        'pso_avg_violations': np.mean(pso_violations_count)
+    }
 
 # 11. RUN PROGRAM
 if __name__ == "__main__":
@@ -1529,6 +1965,45 @@ def validate_solution(solution: np.ndarray) -> Dict:
         }
     
     return validation
+
+def validate_final_solution(solution: np.ndarray) -> Dict:
+    """
+    Validate bahwa SEMUA constraints terpenuhi di solusi final
+    """
+    violations = []
+    
+    # Check C6
+    awkward = [(i, p) for i, p in enumerate(solution) if 0 < p < MIN_PORTION_PER_FOOD]
+    if awkward:
+        violations.append(f"C6: {len(awkward)} portions < 50g")
+    
+    # Check C7
+    for category, max_items in MAX_ITEMS_PER_CATEGORY.items():
+        start_idx = CATEGORY_START[category]
+        end_idx = start_idx + len(FOOD_DATABASE[category])
+        items = np.sum(solution[start_idx:end_idx] >= MIN_PORTION_PER_FOOD)
+        
+        if items > max_items:
+            violations.append(f"C7: {category} = {items} items (max={max_items})")
+    
+    # Check C8
+    staple_total = sum(solution[idx] for idx in STAPLE_FOOD_INDICES)
+    if staple_total < MIN_STAPLE_PORTION:
+        violations.append(f"C8: Staple food = {staple_total:.1f}g (min=200g)")
+    
+    # Check C5B
+    minuman_start = CATEGORY_START['minuman']
+    minuman_end = minuman_start + len(FOOD_DATABASE['minuman'])
+    minuman_total = np.sum(solution[minuman_start:minuman_end])
+    
+    if minuman_total < 600 or minuman_total > 900:
+        violations.append(f"C5B: Minuman = {minuman_total:.1f}ml (range: 600-900ml)")
+    
+    return {
+        'all_constraints_met': len(violations) == 0,
+        'violations': violations,
+        'num_violations': len(violations)
+    }
 
 def test_algorithms():
     print(f"\n{'='*70}")

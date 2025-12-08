@@ -1,0 +1,6 @@
+{
+    "ga_perfect_rate": 0.7,
+    "pso_perfect_rate": 0.0,
+    "ga_avg_violations": 0.4,
+    "pso_avg_violations": 1.4
+}
