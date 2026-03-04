@@ -422,5 +422,5 @@ Dataset sources: TKPI 2017 & local market survey.
 
 ---
 
-**Last Updated:** December 2024  
+**Last Updated:** December 2025  
 **Version:** 1.0.0
