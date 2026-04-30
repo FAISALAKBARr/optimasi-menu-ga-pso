@@ -21,7 +21,7 @@ DOKUMENTASI LENGKAP PROGRAM
 
 2. CARA MENJALANKAN
    a. Interactive Mode:
-      python nutrition_optimization.py
+      python final-code.py
       
    b. Jupyter Notebook:
       - Copy semua code ke satu cell
