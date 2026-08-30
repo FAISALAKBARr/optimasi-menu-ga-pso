@@ -287,48 +287,6 @@ Expected Result:
 """
 FINAL NOTES FOR IMPLEMENTATION
 
-✅ CHECKLIST SEBELUM DEMO/PRESENTASI:
-   1. [ ] Test semua fungsi dengan test_algorithms()
-   2. [ ] Run statistical analysis minimal 30x
-   3. [ ] Generate menu 7 hari untuk showcase
-   4. [ ] Save semua output (CSV, PNG, JSON)
-   5. [ ] Prepare backup data jika demo gagal
-   6. [ ] Print beberapa menu contoh untuk ditunjukkan
-   7. [ ] Siapkan penjelasan matematika (lihat document 1)
-
-📊 TIPS PRESENTASI:
-   1. Mulai dengan penjelasan problem (4 Sehat 5 Sempurna)
-   2. Jelaskan decision variables & constraints
-   3. Tunjukkan convergence plot (GA vs PSO)
-   4. Highlight hasil statistical test (t-test)
-   5. Showcase menu 7 hari yang realistic
-   6. Diskusikan trade-offs (cost vs nutrition)
-   7. Conclude dengan winner (GA atau PSO)
-
-🎯 EXPECTED QUESTIONS & ANSWERS:
-   Q: Kenapa PSO lebih baik/GA lebih baik?
-   A: [Tergantung hasil] Jelaskan dari segi convergence, stability, time
-   
-   Q: Apakah menu ini realistis?
-   A: Ya, semua makanan ada di pasar Indonesia, harga real
-   
-   Q: Kenapa tidak multi-objective?
-   A: Simplifikasi untuk fokus ke perbandingan algoritma
-   
-   Q: Bagaimana handle infeasible solutions?
-   A: Penalty function method, dijelaskan di calculate_penalty()
-   
-   Q: Apakah bisa ditambah constraint lain?
-   A: Ya, tinggal tambah di calculate_penalty() (contoh: vitamin)
-
-💡 IMPROVEMENT IDEAS (Jika ada waktu):
-   1. Add visualisasi pie chart komposisi nutrisi
-   2. Add meal timing (sarapan, makan siang, makan malam)
-   3. Add variety score (hindari makanan sama setiap hari)
-   4. Add taste preference model
-   5. Add seasonal availability constraint
-   6. Integrate real-time price API
-
 🐛 KNOWN LIMITATIONS:
    1. Harga statis (tidak real-time)
    2. Tidak consider cooking time/effort
@@ -341,6 +299,4 @@ FINAL NOTES FOR IMPLEMENTATION
    2. PSO: Kennedy & Eberhart original paper
    3. Constraint handling: Deb's feasibility rules
    4. Multi-objective: NSGA-II paper
-
-GOOD LUCK WITH YOUR PRESENTATION! 🚀
 """
